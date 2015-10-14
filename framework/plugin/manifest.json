@@ -1,0 +1,12 @@
+{
+  "name": "Angry Birds Interface",
+  "version": "1",
+  "manifest_version": 2,
+  "content_scripts": [
+    {
+      "matches": ["http://chrome.angrybirds.com/"],
+      "css": ["style.css"],
+      "js": ["jquery-1.7.2.min.js", "script.js"]
+    }
+  ]
+}

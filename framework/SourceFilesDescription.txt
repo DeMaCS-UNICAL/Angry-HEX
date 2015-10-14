@@ -1,0 +1,32 @@
+The src folder contains all the java source codes of the software. 
+
+The following are the files you may want to modify:
+
+========= Files under /src/ab/demo/ =====================				
+ClientNaiveAgent.java : A server/client version of the Naive agent that interacts with the server by the pre-defined protocols
+NaiveAgent.java : A standardalone implementation of the Naive agent. You can run this agent without the server.
+
+======== Files under /src/ab/demo/other/ ================
+
+ActionRobot.java : A java util class for the standalone version. It provides common functions an agent would use. E.g. get the screenshot
+
+ClientActionRobot.java : A server/client version of the java util class that encodes client messages and decodes the corresponding server messages complying with the protocols. Its subclass is ClientActionRobotJava.java which decodes the received server messages into java objects.
+
+LoadingLevelSchema.java / RestartLevelSchema.java / ShootingSchema.java : Those files are only for the standalone version. A standalone agent can use the schemas respectively to load levels, restart levels, and launch birds. 
+
+======== Files under /src/ab/planner/ ====================
+
+TrajectoryPlanner.java : Implementation of the trajectory module
+
+=======  Files under /src/ab/vision ======================
+
+All the files under this folder are vision files.
+
+Vision.java ： the primary implementation of the vision module. 
+
+====== Files under /src/external ===========================
+
+ClientMessageEncoder.java : encode the client messages according to the protocols
+
+ClientMessageTable.java : a table that maintains all the client messages and its corresponding MIDs. 
+

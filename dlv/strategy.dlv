@@ -1,0 +1,35 @@
+
+%%%%%%% first priority strategic rule (R1): play each level once %%%%%%%
+% firstchooselevel(X): the level X was chosen as the next level to be played wrt to R1 (secondchooselevel and thirdchooselevel are defined accordingly)
+
+firstchooselevel(X):-timeslevelplayed(X,0),myscore(X,0),timeslevelplayed(Y,Z),#succ(Y,X), Z>=1.
+firstchooselevel(0):-timeslevelplayed(0,0),myscore(0,0).
+firstchosen:-firstchooselevel(X).
+
+%%%%%%% second priority strategic rule (R2): play level in which our score maximally differs from the best one (unless this level has been played >=3 times); if more then one level satisfy this property then among the candidates choose the smallest level that was played minimal number of times %%%%%%% 
+% diff(X,Y,Z) states that at level X |ourscore-bestscore|=Y; Z=1 iff ourscore>bestscore, otherwise Z=0.
+
+notmaxdiff(X):-diff(X,Y,0), diff(X1,Y1,0), X!=X1, Y1>Y.
+maxdiff(X):-diff(X,Y,0), not notmaxdiff(X).
+secondchooselevelcand(X):-maxdiff(X), timeslevelplayed(X,Z), Z<3, not firstchosen.
+drop(X):-secondchooselevelcand(X),secondchooselevelcand(X1),timeslevelplayed(X,Y),timeslevelplayed(X1,Y1),Y>Y1.
+notminlevel(X):-secondchooselevelcand(X), secondchooselevelcand(Y), not drop(X), not drop(Y), Y<X.
+secondchooselevel(X):-secondchooselevelcand(X), not notminlevel(X), not drop(X).
+secondchosen:-secondchooselevel(X).
+
+%%%%%%% third priority strategic rule (R3): play level in which we got the best score, and the difference between our score and the second best one is minimal (unless the level has been played >=5 times); if more then one level satisfy this property, then among the candidates choose the smallest level that was played minimal number of times %%%%%%%
+
+notmindiff(X):-diff(X,Y,1), diff(X1,Y1,1), X1!=X, Y1<Y.
+mindiff(X):-diff(X,Y,1), not notmindiff(X).
+thirdchooselevelcand(X):-mindiff(X), timeslevelplayed(X,Z), Z<5, not firstchosen, not secondchosen.
+drop(X):-thirdchooselevelcand(X),thirdchooselevelcand(X1),timeslevelplayed(X,Y),timeslevelplayed(X1,Y1),Y>Y1.
+notminlevel(X):-thirdchooselevelcand(X), thirdchooselevelcand(Y), not drop(X), not drop(Y), Y<X.
+thirdchooselevel(X):-thirdchooselevelcand(X), not notminlevel(X), not drop(X).
+thirdchosen:-thirdchooselevel(X).
+
+
+%%%%%%% if now level was chosen according to the strategic rules 1-3, then we send 111 in the newlevel predicate, meaning that a random level needs to be played next %%%%%%%
+newlevel(111):-not firstchosen, not secondchosen, not thirdchosen.
+newlevel(X):-firstchooselevel(X).
+newlevel(X):-secondchooselevel(X).
+newlevel(X):-thirdchooselevel(X).

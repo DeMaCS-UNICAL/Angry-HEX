@@ -1,0 +1,14 @@
+.ai_button {
+	border: 1px solid black;
+	background-color: red;
+	cursor: pointer;	
+}
+
+.ai_button:hover {
+	background-color: yellow;
+}
+
+.ai_mark {
+	position: absolute; 
+	border: 1px solid black;
+}

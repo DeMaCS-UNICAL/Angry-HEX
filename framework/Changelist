@@ -1,0 +1,37 @@
+Here is a list of the major changes, for details, please see ABDoc.pdf under the ./doc folder. The server/client protocols remains unchanged, so the old version agents can still work with the server.
+
+================ Changes Since abV1.32 ====================================
+1. Plugin fix for the zooming functions. The zoom in and zoom out functions stopped working because Google Chrome has changed the api of WheelEvent (since chrome version 38.0.2125.104).
+ 
+2. Change the software license to the GNU Affero General Public License
+ 
+================ Changes Since abV1.31 ====================================
+1. The RealShape segmentation can now distinguish between hollow and solid objects (see ABDoc.pdf section Object Representation)
+
+2. Better triangle recognition: Triangles are treated as Polygon.java while the previous version often mis-detects the triangles as circle. 
+
+3. Add findHills() in Vision.java (in the previous version, the hill is returned by the method findBlocksRealShape()) 
+
+4. Add findTNTs() in Vision.java (in the previous version, you need to call VisionMBR.findTNTs() to get all the TNTs) 
+
+5. In Rect.java, the attributes PreciseWidth and PreciseHeight are changed to plength and pwidth, respectively. The corresponding methods are also changed accordingly.
+
+6. The method estimateLaunchPoint (see /src/ab/planner/TrajectoryPlanner.java) now returns empty list of release points when no plausible trajectories found for that target, and in this case, the sample agent will make a 45 degree shot.
+7. The isReachable method (see /src/ab/utils/ABUtil) now returns true (reachable) when a trajectory can reach the target without obstruction. Previously, the method only checks the obstruction by assuming the input trajectory always passes the target.  
+
+5. Bug Fixes:
+5.1 Fix the bug that the method findBirdsRealShape() always returns unknown birds. 
+5.2 Fix the bug in build.xml where the main-class was set to "ClientNaiveAgent.java" (should be "MainEntry.java")  
+5.3 Fix the bug that the method findBlocksRealShape() returns Pigs. (Now the method returns Wood, Stone, and Ice)
+
+================ Changes Since abV1.30 =====================================
+1. New Vision Module (see Package ./src/ab/vision):
+The new vision module is composed of two image segmentation components. One component segments an image and outputs a list of the minimum bounding rectangles (MBR) of essential objects in the image. The essential objects includes {‚ÄúSling‚Ä? "Red Bird‚Ä? ‚ÄúYellow Bird‚Ä? ‚ÄúBlue Bird‚Ä? ‚ÄúBlack Bird‚Ä? ‚ÄúWhite Bird‚Ä? "Pig", "Ice", ‚ÄúWood", "Stone", "TNT‚Ä? ‚ÄúTrajPoints‚Äù}. The other component outputs real shapes instead.  You can use either of them to process a screenshot.
+
+2. Useful methods:
+2.1 Get the type of the bird on the sling (see File ./src/ab/demo/other/ActionRobot.java).
+2.2 Get all the supports of an object (see File ./src/ab/utils/ABUtil.java).
+2.3 Test whether a point is reachable by a trajectory (see File ./src/ab/utils/ABUtil.java).
+
+
+4. Code re-factoring and bug fixes. 

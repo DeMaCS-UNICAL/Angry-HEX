@@ -1,0 +1,37 @@
+
+#maxint=1000.
+
+trajectory(low).
+trajectory(high).
+type(pig).
+type(ground).
+type(ice).
+type(wood).
+type(stone).
+
+%
+% Percentage perturbations on tap time depending on bird type
+%
+%
+%  Tap on red is used for calibration.
+%
+tap(50) :- birdType(red).
+tap(50)  :- birdType(yellow).
+tap(50)  :- birdType(blue).
+tap(50) :- birdType(black).
+tap(50)  :- birdType(white).
+%
+% When targeting X, Z is the Y-th object hit in the trajectory T (starts from 0).
+% 
+% For performance, this graph is built only for trajectories directed to shootable targets.
+%
+shootable(O, T) :- &next[O,T,V,Sx,Sy,Sw,Sh,object](0,O),  velocity(V), object(O,_,_,_,_,_,_), slingshot(Sx,Sy,Sw,Sh), trajectory(T).
+
+% This part sees to it that for every answer set exactly one target is generated.
+
+target(O, T, Time) v not_target(O, T, Time) :- shootable(O, T), tap(Time).
+
+:- target(X, _, _), target(Y, _, _), X != Y.
+:- target(_, T1, _), target(_, T2, _), T1 != T2.
+target_exists :- target(_,_,_).
+:- not target_exists.
