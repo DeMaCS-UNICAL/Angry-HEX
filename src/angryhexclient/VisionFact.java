@@ -69,7 +69,7 @@ public class VisionFact {
 		addPigs(vision.findPigsMBR());
 		addBlocks(vision.findBlocksRealShape());
 		addTNTs(vision.findTNTs());
-		addGround(ourVision.detectGround());
+		// addGround(ourVision.detectGround());
 	}
 
 	private void addPigs(List<ABObject> objs)

@@ -1,6 +1,6 @@
 
 OUTFILE=libdlvhexplugin-hexagentplugin.so
-PLUGIN_DIR=/usr/local/lib/dlvhex/plugins/
+PLUGIN_DIR=/usr/local/lib/dlvhex2/plugins/
 
 INCLUDES= \
   -isystem /usr/local/include \
