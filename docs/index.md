@@ -19,9 +19,24 @@ This layer is also realized declaratively as an (ordinary) ASP program encoding 
 For each level, the **Strategy** layer keeps tracks of previously achieved scores and previously selected initial target objects.
 
 ## Core Team
+ - Francesco Calimeri [2013-2017]
+ - Michael Fink [2013-2015]
+ - Valeria Fionda [2016-2017]
+ - Stefano Germano [2013-2017]
+ - Andreas Humenberger [2014-2015]
+ - Giovambattista Ianni [2013-2017]
+ - Aldo Marzullo [2017]
+ - Christoph Redl [2013-2017]
+ - Zeynep G. Saribatur [2016-2017]
+ - Peter Schüller [2016-2017]
+ - Daria Stepanova [2014-2017]
+ - Andrea Tucci [2014-2015]
+ - Anton Wimmer [2013]
 
 ### Contacts
+angryhex@mat.unical.it
 
 ## License
+  [GNU Affero General Public License](../LICENSE)
 
 ## Publications
