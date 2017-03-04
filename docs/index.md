@@ -34,7 +34,7 @@ For each level, the **Strategy** layer keeps tracks of previously achieved score
  - Anton Wimmer [2013]
 
 ### Contacts
-angryhex@mat.unical.it
+<angryhex@mat.unical.it>
 
 ## License
   [GNU Affero General Public License](../LICENSE)
