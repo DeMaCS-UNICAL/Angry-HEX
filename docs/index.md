@@ -37,7 +37,7 @@ For each level, the **Strategy** layer keeps tracks of previously achieved score
 angryhex "AT" mat.unical.it
 
 ## License
-  [GNU Affero General Public License](https://github.com/DeMaCS-UNICAL/Angry-HEX/LICENSE)
+  [GNU Affero General Public License](https://github.com/DeMaCS-UNICAL/Angry-HEX/blob/master/LICENSE)
 
 ## Publications
  - Francesco Calimeri, Michael Fink, Stefano Germano, Andreas Humenberger, Giovambattista Ianni, Christoph Redl, Daria Stepanova, Andrea Tucci, Anton Wimmer.<br />
