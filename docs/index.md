@@ -40,3 +40,9 @@ angryhex <AT> mat.unical.it
   [GNU Affero General Public License](../LICENSE)
 
 ## Publications
+ - Francesco Calimeri, Michael Fink, Stefano Germano, Andreas Humenberger, Giovambattista Ianni, Christoph Redl, Daria Stepanova, Andrea Tucci, Anton Wimmer.<br />
+   _"Angry-HEX: an artificial player for angry birds based on declarative knowledge bases."_<br />
+   IEEE Transactions on Computational Intelligence and AI in Games (TCIAIG) 8, no. 2 (2016): 128-139.
+ - Francesco Calimeri, Michael Fink, Stefano Germano, Giovambattista Ianni, Christoph Redl, Anton Wimmer<br />
+   _"AngryHEX: An Artificial Player for Angry Birds Based on Declarative Knowledge Bases."_<br />
+   In National Workshop and Prize on Popularize Artificial Intelligence (PAI), Turin, Italy December 5, 2013, vol. 8148, pp. 267-275. Springer, 2013
