@@ -45,4 +45,5 @@ angryhex "AT" mat.unical.it
    IEEE Transactions on Computational Intelligence and AI in Games (TCIAIG) 8, no. 2 (2016): 128-139.
  - Francesco Calimeri, Michael Fink, Stefano Germano, Giovambattista Ianni, Christoph Redl, Anton Wimmer<br />
    _"AngryHEX: An Artificial Player for Angry Birds Based on Declarative Knowledge Bases."_<br />
-   In National Workshop and Prize on Popularize Artificial Intelligence (PAI), Turin, Italy December 5, 2013, vol. 8148, pp. 267-275. Springer, 2013
+   In National Workshop and Prize on Popularize Artificial Intelligence (PAI), Turin, Italy December 5, 2013, vol. 8148, pp. 267-275. Springer, 2013<br />
+   **Winner of the Best Paper Award for the section "Academic and Research Experiences"**
