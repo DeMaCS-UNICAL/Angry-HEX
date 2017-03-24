@@ -36,6 +36,13 @@ For each level, the **Strategy** layer keeps tracks of previously achieved score
 ### Contacts
 angryhex "AT" mat.unical.it
 
+### Team Descriptions
+ - [2013](https://aibirds.org/2013-Papers/Team-Descriptions/AngryHEX.pdf)
+ - [2014](https://aibirds.org/2014-papers/AngryHEX-2014.pdf)
+ - [2015](https://aibirds.org/2014-papers/AngryHEX-2014.pdf)
+ - [2016]()
+ - [2017]()
+
 ## License
   [GNU Affero General Public License](https://github.com/DeMaCS-UNICAL/Angry-HEX/blob/master/LICENSE)
 
