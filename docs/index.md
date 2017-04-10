@@ -54,3 +54,8 @@ angryhex "AT" mat.unical.it
    _"AngryHEX: An Artificial Player for Angry Birds Based on Declarative Knowledge Bases."_<br />
    In National Workshop and Prize on Popularize Artificial Intelligence (PAI), Turin, Italy December 5, 2013, vol. 8148, pp. 267-275. Springer, 2013<br />
    **Winner of the Best Paper Award for the section "Academic and Research Experiences"**
+   
+## Useful material
+ - [Poster 2013](files/poster_2013.pdf)
+ - [slides_PAI_13](files/slides_PAI_13.pdf)
+ - [slides_2014](files/slides_2014.pdf)
