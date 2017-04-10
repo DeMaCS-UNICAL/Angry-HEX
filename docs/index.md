@@ -57,5 +57,5 @@ angryhex "AT" mat.unical.it
    
 ## Useful material
  - [Poster 2013](files/poster_2013.pdf)
- - [slides_PAI_13](files/slides_PAI_13.pdf)
- - [slides_2014](files/slides_2014.pdf)
+ - [Slides PAI 2013](files/slides_PAI_13.pdf)
+ - [Slides 2014](files/slides_2014.pdf)
