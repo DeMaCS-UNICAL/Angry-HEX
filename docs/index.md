@@ -24,7 +24,7 @@ For each level, the **Strategy** layer keeps tracks of previously achieved score
  - Valeria Fionda [2016-2017]
  - Stefano Germano [2013-2017]
  - Andreas Humenberger [2014-2015]
- - Giovambattista Ianni [2013-2017]
+ - Giovambattista Ianni [2013-2016]
  - Aldo Marzullo [2017]
  - Christoph Redl [2013-2017]
  - Zeynep G. Saribatur [2016-2017]
