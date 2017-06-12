@@ -5,7 +5,7 @@
 SCR_ANGRYHEX=dev.angryhex.sh
 ZIP_ANGRYHEX=angryhex.zip
 DIR_ANGRYHEX=angryhex
-URL_ANGRYHEX=https://www.dropbox.com/s/nvppekqq3rjvpri/angryhex.zip?dl=0
+URL_ANGRYHEX=https://github.com/DeMaCS-UNICAL/Angry-HEX/releases/download/angryhex2016/angryhex.zip
 
 #-------------------------------------------------------------------------------
 
