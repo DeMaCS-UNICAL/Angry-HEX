@@ -32,8 +32,10 @@ public abstract class Reasoner {
 			Configuration.getHexpath(),
 			Configuration.getUseDlv() ? "--solver=dlv" : "",
 			Configuration.getHexAdditionalArguments(),
-			Configuration.isCalibrationMode() ? "-n=1" : "", "-e easy",
-			"--weak-enable", "--silent", "--verbose=0" });
+			Configuration.isCalibrationMode() ? "-n=1" : "",
+      "-e old", // old is much faster than easy which is much faster than default (greedy)
+			"--weak-enable", "--silent",
+      Configuration.isDebugMode() ? "--verbose=8": "--verbose=0" });
 
 	// parent dir of dlv files
 	protected static String clientDir = System.getProperty("user.dir")

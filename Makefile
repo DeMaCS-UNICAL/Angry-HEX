@@ -1,17 +1,20 @@
-PYTHONLIBS=/usr/lib/pymodules/python2.7
-OPENCVLIBS=/usr/local/share/OpenCV/java
-OPENCVJAR=/usr/local/share/OpenCV/java
-BOX2DLIBS=/usr/local/lib
-
 .PHONY: all java plugin clean
 
 all: java plugin
 
 java:
-	ant -lib framework/external/:${PYTHONLIBS}/:${OPENCVJAR}/opencv-246.jar:${OPENCVLIBS}/:${BOX2DLIBS}/ -f build.xml jar
+	@test ! -e dev.angryhex.sh || { \
+		echo "use this Makefile only via ./dev.angryhex.sh! (works only in source-staging subdirectory 'angryhex')"; \
+		/bin/false; \
+	}
+	ant jar
 
 plugin:
-	make -C src/angrybirds-box2dplugin install
+	{ \
+		cd src/angrybirds-box2dplugin ; \
+		./configure -C ; \
+		make install ; \
+	}
 
 clean:
 	ant -f build.xml clean

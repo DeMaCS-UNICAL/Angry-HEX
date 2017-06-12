@@ -3,6 +3,10 @@
     <!--ANT 1.7 is required                                        -->
     <property name="lib.dir" value="external"/>
 
+    <presetdef name="javac">
+      <javac includeantruntime="false" />
+    </presetdef>
+
     <path id="classpath">
         <fileset dir="${lib.dir}" includes="**/"/>
         <fileset dir="${lib.dir}" includes="**/*.jar"/>
@@ -14,6 +18,10 @@
 
     <target name="compile">
         <mkdir dir="src"/>
+        <!-- output classpath -->
+        <pathconvert property="classpathProp" refid="classpath"/>
+        <echo>Classpath is ${classpathProp}</echo>
+        <!-- do the compilation -->
         <javac srcdir="src" destdir="src" classpathref="classpath"/>
     </target>  
 
@@ -23,7 +31,7 @@
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
                 <attribute name="Rsrc-Main-Class" value="angryhexclient.HexMainEntry"/>
                 <attribute name="Class-Path" value="."/>
-		<attribute name="Rsrc-Class-Path" value="./ external/Jama-1.0.2.jar external/json-simple-1.1.1.jar external/WebSocket.jar external/commons-codec-1.7.jar external/opencv-246.jar"/>
+		<attribute name="Rsrc-Class-Path" value="./ external/Jama-1.0.2.jar external/json-simple-1.1.1.jar external/WebSocket.jar external/commons-codec-1.7.jar"/>
             </manifest>
             <zipfileset src="external/jar-in-jar-loader.zip"/>
             <fileset dir="src/"/>
@@ -31,7 +39,6 @@
             <zipfileset dir="external" includes="json-simple-1.1.1.jar"/>
             <zipfileset dir="external" includes="WebSocket.jar"/>
             <zipfileset dir="external" includes="commons-codec-1.7.jar"/>
-	    <zipfileset dir="external" includes="opencv-246.jar"/>
         </jar>
     </target>
 </project>

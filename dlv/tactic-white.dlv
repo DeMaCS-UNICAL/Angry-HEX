@@ -1,0 +1,51 @@
+% Specific rules for the White Bird (Matilda)
+
+
+%----------------------------------------%
+% Specific trajectory for the White Bird %
+%----------------------------------------%
+trajectory(egg) :- birdType(whitebird).
+
+
+%
+% In egg mode, we will tap and offset this way
+%
+targetData(X,low,98,Up_Y,1) :- target(X,egg), highestPixel(Y), Up_Y = Y - 50.
+
+
+%------------------------%
+% Rules to compute ????? %
+%------------------------%
+lowObjValue(T) :- boundingBox(O,_,_,Y,_,H,_), boundingBox(O1,_,_,Y1,_,H1,_),
+                    O != O1, T = Y - Hm, T1 = Y1 - H1m, Hm = H/2, H1m = H1/2, T1 < T.
+highestPixel(T) :- boundingBox(O,_,_,Y,_,H,_), T = Y - Hm, Hm = H/2, not lowObjValue(T).
+
+
+%--------------------------------------------------------------------%
+% When the birdtype is white, next is enriched with egg trajectories %
+%--------------------------------------------------------------------%
+eggShootable(Obj,X) :- &clearsky[Obj,dObject,hills](1), ngobject(Obj,_,X,_,_,_,_).
+nextEgg(Obj,0,Obj) :- eggShootable(Obj,Off).
+nextEgg(Upmost,X,Down) :- nextEgg(Upmost,Y,Under), X = Y+1, firstbelow(Under,Down), X <= 500, #int(X).
+
+next(Upmost,Y,Obj,egg,Off) :- nextEgg(Upmost,Y,Obj), eggShootable(Upmost,Off).
+
+
+%-------------------------------------------------------------%
+% Also if it's eggShootable, it is a possible object to shoot %
+%-------------------------------------------------------------%
+veryShootable(O,egg) :- eggShootable(O,Off).
+
+
+%---------------------------------------------------------------------%
+% computes probability of direct damage for the Egg of the White Bird %
+%---------------------------------------------------------------------%
+directDamage(Obj,P,E) :- outerTarget(Obj,Inner,egg,_), objectType(Obj,T), 
+                         damageProbability(egg,T,P), energyLoss(egg,T,E).
+
+directDamage(ObjB,P,Energy) :- outerTarget(ObjC,ObjT,egg,Off), objectType(ObjB,T_B), objectType(ObjA,T_A), 
+                     directDamage(ObjA,P_A,Energy_A),
+                     energyLoss(egg,T_A,E_L), En_temp = E_L * Energy_A, Energy = En_temp / 100, Energy_A >= 10,
+                     damageProbability(egg,T_B,P_B), P_A > 0, P_Temp = P_A * P_B, P = P_Temp / 100,
+                     
+                     next(ObjT,X,ObjA,egg,Off), Y = X+1, next(ObjT,Y,ObjB,egg,Off).

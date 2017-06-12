@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Angry-HEX - an artificial player for Angry Birds based on declarative knowledge bases
- * Copyright (C) 2012-2015 Francesco Calimeri, Michael Fink, Stefano Germano, Andreas Humenberger, Giovambattista Ianni, Christoph Redl, Daria Stepanova, Andrea Tucci, Anton Wimmer.
+ * Copyright (C) 2012-2016 Francesco Calimeri, Michael Fink, Stefano Germano, Andreas Humenberger, Giovambattista Ianni, Christoph Redl, Daria Stepanova, Peter Schueller, Andrea Tucci, Anton Wimmer.
  *
  * This file is part of Angry-HEX.
  *
@@ -15,143 +15,145 @@ package angryhexclient;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import ab.vision.BirdType;
- 
-public class Configuration
-{
+
+public class Configuration {
+	private static String configfile = "config.properties";
+
+	private static final Logger Log = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	private static Properties prop = null;
 
-	private static void initialize()
-	{
-
-		//if (prop == null) {
-		try {
-			prop = new Properties();
-			prop.load(new FileInputStream("config.properties"));
-		}
-		catch(IOException e)
-		{
-			System.err.println("Could not open configuration file.");
-			System.err.println(e);
-
-			System.err.println("Falling back to defaults.");
-
-			prop = null;
-		}
-		//}
+	public static int getFastshootThreshold() {
+		Configuration.initialize();
+		if (Configuration.prop == null)
+			return 0;
+		return Integer.parseInt(Configuration.prop.getProperty("fastshootthreshold"));
 	}
 
-	public static double getSpeedRatio()
-	{
-		initialize();
-		if (prop == null) return 0.0;
+	public static String getHexAdditionalArguments() {
+		Configuration.initialize();
 
-        return Double.parseDouble(prop.getProperty("speedRatio"));
-		
-	}
-	public static double getSpeedRatioByBird(BirdType b)
-	{
-		initialize();
-		if (prop == null) return 0.0;
+		if (Configuration.prop == null)
+			return "";
 
-        return Double.parseDouble(prop.getProperty("speedRatio."+b.name()));
-		
-	}
-	public static boolean getUseDlv()
-	{
-		initialize();
-
-		if (prop == null) return true;
-
-                return !prop.getProperty("usedlv").equals("false") && !prop.getProperty("usedlv").equals("no");
+		return Configuration.prop.getProperty("hexaditionalarguments");
 	}
 
-	public static String getOpencvNativePath()
-	{
-		initialize();
+	public static String getHexpath() {
+		Configuration.initialize();
 
-		if (prop == null) return null;
+		if (Configuration.prop == null)
+			return "dlvhex2";
 
-                return prop.getProperty("opencvnativepath").equals("USELDPATH") ? null : prop.getProperty("opencvnativepath");
+		return Configuration.prop.getProperty("hexpath");
 	}
 
-	public static String getHexpath()
-	{
-		initialize();
-
-		if (prop == null) return "dlvhex2";
-
-                return prop.getProperty("hexpath");
-	}
-
-	public static String getHexAdditionalArguments()
-	{
-		initialize();
-
-		if (prop == null) return ""; 
-
-                return prop.getProperty("hexaditionalarguments");
-	}
-
-	public static boolean isCalibrationMode() {
-		initialize();
-		String b = prop.getProperty("calibrationmode"); 
-		boolean retVal =  !b.equals("false") && !b.equals("no") && !b.equals("0");
-//		System.out.println("Calibration mode:"+b+"->"+retVal);
-		return retVal;
-	}
-	
-	public static String getReasoningFilename()
-	{
-        initialize();
-		return prop.getProperty("reasoningfilename");
+	public static String getReasoningFilename() {
+		Configuration.initialize();
+		return Configuration.prop.getProperty("reasoningfilename");
 
 	}
-	
-	public static String getReasoningWhiteFilename()
-	{
-        initialize();
-		return prop.getProperty("reasoningWhitefilename");
+
+	public static String getReasoningFixedKnowledgeFilename() {
+		Configuration.initialize();
+		return Configuration.prop.getProperty("reasoningFKfilename");
+
+	}
+
+	public static String getReasoningWhiteFilename() {
+		Configuration.initialize();
+		return Configuration.prop.getProperty("reasoningWhitefilename");
+
+	}
+
+	public static int getShotMagnitude() {
+		Configuration.initialize();
+		if (Configuration.prop == null)
+			return 0;
+		return Integer.parseInt(Configuration.prop.getProperty("shotmagnitude"));
+	}
+
+	public static double getSpeedRatio() {
+		Configuration.initialize();
+		if (Configuration.prop == null)
+			return 0.0;
+
+		return Double.parseDouble(Configuration.prop.getProperty("speedRatio"));
+
+	}
+
+	public static double getSpeedRatioByBird(final BirdType b) {
+		Configuration.initialize();
+		if (Configuration.prop == null)
+			return 0.0;
+
+		return Double.parseDouble(Configuration.prop.getProperty("speedRatio." + b.name()));
 
 	}
 
 	public static double getTargetYOffset() {
-		initialize();
-        return Double.parseDouble(prop.getProperty("targetyoffset"));
+		Configuration.initialize();
+		return Double.parseDouble(Configuration.prop.getProperty("targetyoffset"));
 	}
-	
+
 	public static int getTeamID() {
-		initialize();
-		if (prop == null) return 0;
-		return Integer.parseInt(prop.getProperty("teamID"));
+		Configuration.initialize();
+		if (Configuration.prop == null)
+			return 0;
+		return Integer.parseInt(Configuration.prop.getProperty("teamID"));
 	}
-	
+
 	public static boolean getTournamentMode() {
-		initialize();
-		if (prop == null) return false;
-		String b = prop.getProperty("tournamentmode"); 
-		boolean retVal =  !b.equals("false") && !b.equals("no") && !b.equals("0");
+		Configuration.initialize();
+		if (Configuration.prop == null)
+			return false;
+		final String b = Configuration.prop.getProperty("tournamentmode");
+		final boolean retVal = !b.equals("false") && !b.equals("no") && !b.equals("0");
 		return retVal;
 	}
 
-	public static int getFastshootThreshold() {
-		initialize();
-		if (prop == null) return 0;
-		return Integer.parseInt(prop.getProperty("fastshootthreshold"));
+	public static boolean getUseDlv() {
+		Configuration.initialize();
+
+		if (Configuration.prop == null)
+			return true;
+
+		return !Configuration.prop.getProperty("usedlv").equals("false")
+				&& !Configuration.prop.getProperty("usedlv").equals("no");
+	}
+
+	private static void initialize() {
+
+		if (prop == null)
+			try {
+				Configuration.prop = new Properties();
+				Configuration.Log.info("loading configuration from '" + Configuration.configfile + "'");
+				Configuration.prop.load(new FileInputStream(Configuration.configfile));
+			} catch (final IOException e) {
+				Configuration.Log.warning("Could not open configuration file.");
+				Configuration.Log.warning(e.toString());
+				Configuration.Log.warning("Falling back to defaults.");
+
+				Configuration.prop = null;
+			}
+		
+	}
+
+	public static boolean isCalibrationMode() {
+		Configuration.initialize();
+		final String b = Configuration.prop.getProperty("calibrationmode");
+		final boolean retVal = !b.equals("false") && !b.equals("no") && !b.equals("0");
+		// System.out.println("Calibration mode:"+b+"->"+retVal);
+		return retVal;
 	}
 
 	public static boolean isDebugMode() {
-		initialize();
-		String b = prop.getProperty("debug"); 
-		boolean retVal =  !b.equals("false") && !b.equals("no") && !b.equals("0");
+		Configuration.initialize();
+		final String b = Configuration.prop.getProperty("debug");
+		final boolean retVal = !b.equals("false") && !b.equals("no") && !b.equals("0");
 		return retVal;
 	}
 
-	public static int getShotMagnitude() {
-		initialize();
-		if (prop == null) return 0;
-		return Integer.parseInt(prop.getProperty("shotmagnitude"));
-	}
-	
 }

@@ -25,71 +25,6 @@ import angryhexclient.util.Utils;
 
 public class TargetReasoner extends Reasoner {
 
-	private static String filterPred = "targetData";
-	private static Pattern filterRegex = Pattern
-			.compile("\\{targetData\\((\\d+),(high|low),(\\d+),(\\d+),(\\d+)\\)\\}");
-
-	private static TargetReasoner instance;
-
-	public static TargetReasoner getInstance() {
-		if (instance == null) {
-			instance = new TargetReasoner();
-		}
-		return instance;
-	}
-
-	private List<TargetData> targets;
-	private int callCount;
-	
-	private TargetReasoner() {
-		super(filterPred, filterRegex);
-
-		this.targets = new ArrayList<TargetData>();
-		this.callCount = 0;
-	}
-
-	public List<TargetData> getTargets() {
-		return targets;
-	}
-
-	public void reason(ABType birdType) throws UnsupportedOperationException,
-			IOException, InterruptedException {
-		// get suitable encoding file
-		String encFile = clientDir + Utils.DLV_DIR + File.separator;
-		if (Configuration.isCalibrationMode()) {
-			encFile += "calibrate.dlv";
-		} else if (birdType == ABType.WhiteBird) {
-			encFile += Configuration.getReasoningWhiteFilename();
-		} else {
-			encFile += Configuration.getReasoningFilename();
-		}
-		setEncodingFile(encFile);
-		reason();
-	}
-
-	@Override
-	protected String getFactFilename() {
-		return String.format("targetData%d.hex", callCount++);
-	}
-	
-	@Override
-	protected void clear() {
-		targets.clear();
-	}
-
-	@Override
-	protected void storeAtom(Matcher m) {
-		int id = Integer.parseInt(m.group(1));
-		int trajectory = m.group(2).equals("low") ? 0 : 1;
-		int tapCoeff = Integer.parseInt(m.group(3));
-		int yoffset = Integer.parseInt(m.group(4));
-		int eggMode = Integer.parseInt(m.group(5));
-
-		TargetData a = new TargetData(id, trajectory, tapCoeff, yoffset,
-				eggMode != 0);
-		targets.add(a);
-	}
-
 	public class TargetData {
 		// The trajectory, 0 for low, 1 for high.
 		public int trajectory;
@@ -99,22 +34,93 @@ public class TargetReasoner extends Reasoner {
 		public int yoffsetRatio;
 		public boolean eggMode;
 
-		public TargetData(int id, int tr, int tap, int yoffset, boolean eggMode) {
-			this.trajectory = tr;
+		public TargetData(final int id, final int tr, final int tap, final int yoffset, final boolean eggMode) {
+			trajectory = tr;
 			this.id = id;
-			this.tapCoeff = tap;
-			this.yoffsetRatio = yoffset;
+			tapCoeff = tap;
+			yoffsetRatio = yoffset;
 			this.eggMode = eggMode;
 		}
 
+		@Override
 		public String toString() {
-			return "ID:" + id + " TRAJ:" + trajectory + " TAP:" + tapCoeff
-					+ " YOFF:" + yoffsetRatio + " MODE:" + eggMode;
+			return "ID:" + id + " TRAJ:" + trajectory + " TAP:" + tapCoeff + " YOFF:" + yoffsetRatio + " MODE:"
+					+ eggMode;
 		}
 	}
-	
+
+	private static String filterPred = "targetData";
+
+	private static Pattern filterRegex = Pattern
+			.compile("\\{targetData\\((\\d+),(high|low),(\\d+),(\\d+),(\\d+)\\)\\}");
+
+	private static TargetReasoner instance;
+
+	public static TargetReasoner getInstance() {
+		if (TargetReasoner.instance == null)
+			TargetReasoner.instance = new TargetReasoner();
+		return TargetReasoner.instance;
+	}
+
+	private final List<TargetData> targets;
+
+	private int callCount;
+
+	private TargetReasoner() {
+		super(TargetReasoner.filterPred, TargetReasoner.filterRegex);
+
+		targets = new ArrayList<>();
+		callCount = 0;
+	}
+
 	@Override
-	protected void saveDebugHexWithInfo(String file){
-	    DebugUtils.saveHexWithInfo(file,"Target");
+	protected void clear() {
+		targets.clear();
+	}
+
+	@Override
+	protected String getFactFilename() {
+		return String.format("targetData%d.hex", callCount++);
+	}
+
+	public List<TargetData> getTargets() {
+		return targets;
+	}
+
+	public void reason(final ABType birdType) throws UnsupportedOperationException, IOException, InterruptedException {
+		// get suitable encoding file
+		String encFile = Reasoner.clientDir + Utils.DLV_DIR + File.separator;
+		if (Configuration.isCalibrationMode())
+			encFile += "calibrate.dlv";
+		else {
+			encFile += Configuration.getReasoningFilename();
+			encFile += " " + Reasoner.clientDir + Utils.DLV_DIR + File.separator;
+
+			encFile += Configuration.getReasoningFixedKnowledgeFilename();
+
+			if (birdType == ABType.WhiteBird) {
+				encFile += " " + Reasoner.clientDir + Utils.DLV_DIR + File.separator;
+				encFile += Configuration.getReasoningWhiteFilename();
+			}
+		}
+		setEncodingFile(encFile);
+		reason();
+	}
+
+	@Override
+	protected void saveDebugHexWithInfo(final String file) {
+		DebugUtils.saveHexWithInfo(file, "Target");
+	}
+
+	@Override
+	protected void storeAtom(final Matcher m) {
+		final int id = Integer.parseInt(m.group(1));
+		final int trajectory = m.group(2).equals("low") ? 0 : 1;
+		final int tapCoeff = Integer.parseInt(m.group(3));
+		final int yoffset = Integer.parseInt(m.group(4));
+		final int eggMode = Integer.parseInt(m.group(5));
+
+		final TargetData a = new TargetData(id, trajectory, tapCoeff, yoffset, eggMode != 0);
+		targets.add(a);
 	}
 }

@@ -27,9 +27,6 @@ DLVHEX_URL=https://github.com/hexhex/${DLVHEX}.git
 BOX2D=Box2D_v2.2.1
 BOX2D_URL=http://box2d.googlecode.com/files/${BOX2D}.zip
 
-OPENCV=opencv-2.4.9
-OPENCV_URL=http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.4.9/opencv-2.4.9.zip/download
-
 ANGRYHEX=angryhex
 
 #-------------------------------------------------------------------------------
@@ -64,7 +61,18 @@ usage() {
 }
 
 RUN() {
-	$@ >> ${F_LOG} 2>&1 && return
+  if [[ "$1" == "cd" ]]; then
+    # builtin commands cannot run with pipe
+    $@ && return ;
+  else
+    # run with pipe
+    $@ 2>&1 |tee -a ${F_LOG}
+    if [[ "${PIPESTATUS[0]}" == "0" ]]; then
+      return ;
+    else
+      echo "Exit Status ${PIPESTATUS[0]}" ;
+    fi
+  fi
 	echo "FAIL"
 	echo
 	echo "Installation FAILED. Please send the file ${F_LOG} to ${EMAIL}."
@@ -180,40 +188,11 @@ installbox2d() {
 	popdir
 }
 
-installopencv() {
-	pushdir
-	echo -n "Installing OpenCV....."
-
-	REQUIRE wget unzip cmake ant default-jdk
-
-	RUN  cd /tmp
-	RUN  rm -rf opencv*
-	RUN  wget ${OPENCV_URL} -O ${OPENCV}.zip
-	RUN  unzip ${OPENCV}.zip
-	RUN  cd ${OPENCV}
-	RUN  mkdir build
-	RUN  cd build
-	RUN  cmake -DBUILD_SHARED_LIBS=OFF ..
-	RUN  make -j4
-	RUN  make install
-
-	# install cv2.so
-	RUN  echo "Checking if cv2.so was built"
-	if [ $(find /tmp/${OPENCV}/build -name cv2.so | wc -l) -ge 1 ]; then
-		RUN  echo "Yes: installing cv2.so"
-		RUN  cp $(find /tmp/${OPENCV}/build -name cv2.so | head) /usr/local/share/OpenCV/java/
-	else
-		RUN  echo "No: no installation required"
-	fi
-	echo "SUCCESS"
-	popdir
-}
-
 installagent() {
 	pushdir
 	echo -n "Installing AngryHEX agent....."
 
-	REQUIRE  ant default-jdk g++-4.4
+	REQUIRE  ant default-jdk g++
 
 	if [ -e ${F_DEVELOP} ]; then
 		rm -rf ${D_AGENT}
@@ -223,6 +202,9 @@ installagent() {
 		RUN  cd ${D_AGENT}
 		RUN  make all
 	else
+		packjava
+		packplugin
+        
 		RUN  cd ${D_AGENT}
 		RUN  make all
 	fi
@@ -267,7 +249,6 @@ installagentplugin() {
 #-------------------------------------------------------------------------------
 
 D_SRC=src         # source
-D_SCR=scripts     # scripts  TODO will be obsolete some time soon
 D_FWK=framework   # framework
 D_ENC=dlv         # encodings of hex programs
 D_AGENT=angryhex  # out directory
@@ -285,7 +266,7 @@ function PKGSRC {
 }
 
 packjava() {
-	rm -rf ${D_AGENT}/${D_SRC}/angryhexclient
+#	rm -rf ${D_AGENT}/${D_SRC}/angryhexclient
 	PKGSRC ${D_SRC}/angryhexclient
 	PKGSRC ${D_FWK}/src/
 	PKG ${D_FWK}/ABServer.jar
@@ -293,7 +274,6 @@ packjava() {
 	PKG ${D_FWK}/plugin
 	PKG ${D_ENC}
 	PKG build.xml
-	PKG ${D_SCR}/client.sh # TODO obsolete???
 	PKG Makefile
 
 	if [[ $1 == archive ]]; then
@@ -312,7 +292,7 @@ DIR_PLUGIN=src/angrybirds-box2dplugin
 OUT_PLUGIN=src/angrybirds-box2dplugin
 
 packplugin() {
-	rm -rf ${D_AGENT}/${OUT_PLUGIN}
+#	rm -rf ${D_AGENT}/${OUT_PLUGIN}
 	rsync -a --cvs-exclude ${DIR_PLUGIN}/* ${D_AGENT}/${OUT_PLUGIN}
 	PKG Makefile
 }
@@ -362,11 +342,10 @@ case $CMD in
 	"install")
 		renewlog
  		case $ARG in
-			"all")          installdlv && installdlvhex && installbox2d && installopencv && installagent ;;
+			"all")          installdlv && installdlvhex && installbox2d && installagent ;;
 			"dlv")          installdlv -f ;;
 			"dlvhex")       installdlvhex -f ;;
 			"box2d")        installbox2d -f ;;
-			"opencv")       installopencv -f ;;
 			"agent")        installagent ;;
 			"agent-java")   installagentjava ;;
 			"agent-plugin") installagentplugin ;;

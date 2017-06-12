@@ -5,7 +5,7 @@
 SCR_ANGRYHEX=dev.angryhex.sh
 ZIP_ANGRYHEX=angryhex.zip
 DIR_ANGRYHEX=angryhex
-URL_ANGRYHEX=https://www.dropbox.com/s/svg2rofn3m7t03m/angryhex.zip
+URL_ANGRYHEX=https://www.dropbox.com/s/nvppekqq3rjvpri/angryhex.zip?dl=0
 
 #-------------------------------------------------------------------------------
 
@@ -64,9 +64,10 @@ fi
 case $CMD in
 	"install") 
  		case $ARG in
-			"all" | "dlv" | "dlvhex" | "box2d" | "opencv" | "agent")
+			"all" | "dlv" | "dlvhex" | "box2d" | "agent")
 				ensureAgent
 				./${SCR_ANGRYHEX} $CMD $ARG
+        ldconfig
 				;;
 			*) echo "Unknown argument $ARG" && usage 1
 		esac

@@ -196,7 +196,6 @@ public abstract class StrategyManager {
 		byte tentativeCurrentLevel = currentLevel;
 
 		if (state == GameState.WON) {
-
 			tentativeCurrentLevel = findNextLevelToPlay();
 			// System.out.println("tentativeCurrentLevel: " +
 			// tentativeCurrentLevel);
@@ -206,10 +205,14 @@ public abstract class StrategyManager {
 
 			System.out.println("\nLevel: " + currentLevel + " NEW score: "
 					+ myScores[currentLevel - 1]);
+			currentLevel = tentativeCurrentLevel;
 			
 		}
+		else {
+			currentLevel = findNextLevelToPlay();	
+		}
 
-		currentLevel = findNextLevelToPlay();
+		//currentLevel = findNextLevelToPlay();
 
 		System.out.println("NEW currentLevel: " + currentLevel + "\n");
 
@@ -300,3 +303,4 @@ public abstract class StrategyManager {
 	public void updateScore(int score) {
 	}
 }
+

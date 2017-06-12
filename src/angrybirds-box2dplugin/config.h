@@ -38,6 +38,6 @@
 const bool debug = false;
 
 //The folder for all file debug output, if so enabled in other flags. Please be sure to append the trailing sperator (e.g. '/').
-const char debugFolder[] = "/home/Angry-HEX/plugintest/svg/";
+const char debugFolder[] = "/home/ianni/plugintest/";
 
 #endif

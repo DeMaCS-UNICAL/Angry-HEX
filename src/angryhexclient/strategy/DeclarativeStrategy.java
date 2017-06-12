@@ -89,7 +89,8 @@ public class DeclarativeStrategy extends StrategyManager {
 		if (newLevel!=111)
 			newLevel+=1;
 		else {
-			newLevel = (byte) (1 + (new Random()).nextInt(21));
+			//newLevel = (byte) (1 + (new Random()).nextInt(21));
+			newLevel = (byte) (1 + (new Random()).nextInt(numberOfLevels));
 		}
 
 		System.out.println("SM: next level to be played " + newLevel);

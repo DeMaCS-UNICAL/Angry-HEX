@@ -204,7 +204,7 @@ public class ClientNaiveAgent implements Runnable {
 		
 		Rectangle sling = vision.findSlingshotMBR();
 
-		//If the level is loaded (in PLAYING　state)but no slingshot detected, then the agent will request to fully zoom out.
+		//If the level is loaded (in PLAYING state)but no slingshot detected, then the agent will request to fully zoom out.
 		while (sling == null && ar.checkState() == GameState.PLAYING) {
 			System.out.println("no slingshot detected. Please remove pop up or zoom out");
 			

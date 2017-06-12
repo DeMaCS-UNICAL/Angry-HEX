@@ -17,7 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.opencv.core.RotatedRect;
+// import org.opencv.core.RotatedRect;
 
 import ab.planner.TrajectoryPlanner;
 import ab.vision.ABObject;
@@ -26,7 +26,7 @@ import ab.vision.Vision;
 import ab.vision.real.shape.Circle;
 import ab.vision.real.shape.Poly;
 import ab.vision.real.shape.Rect;
-import angryhexclient.OurVision.Block;
+// import angryhexclient.OurVision.Block;
 
 public class VisionFact {
 
@@ -38,12 +38,11 @@ public class VisionFact {
 	private TrajectoryPlanner planner;
 	
 	//just for ground
-	private OurVision ourVision;
+	// private OurVision ourVision;
 
-	public VisionFact(Vision vision, OurVision ourVision, TargetReasoner reasoner,
+	public VisionFact(Vision vision, TargetReasoner reasoner,
 			TrajectoryPlanner planner) {
 		this.vision = vision;
-		this.ourVision = ourVision;
 		this.reasoner = reasoner;
 		this.abobjects = new LinkedList<ABObject>();
 		this.planner = planner;
@@ -70,6 +69,8 @@ public class VisionFact {
 		addBlocks(vision.findBlocksRealShape());
 		addTNTs(vision.findTNTs());
 		// addGround(ourVision.detectGround());
+		// TODO test and uncomment the next line
+		addHills(vision.findHills());
 	}
 
 	private void addPigs(List<ABObject> objs)
@@ -102,7 +103,7 @@ public class VisionFact {
 				addRect(ab);
 				break;
 			case Triangle:
-				addTriangle(ab);
+				addPoly(ab);
 				break;
 			default:
 				Log.warning("unknown ABShape");
@@ -127,18 +128,20 @@ public class VisionFact {
 	}
 
 	private void addPoly(ABObject ab) {
-		// FIXME identification of a triangle(three points) may be not enough as vision can recognize a triangle as a poly line (and it can be imprecise)
+
 	    String type = VisionFact.getABTypeString(ab.getType()).toLowerCase();
+		int index = addABObject(ab);
+		
 	    Poly poly = (Poly) ab;
-		//If the poly line has three points, it is a triangle
-		if (poly.polygon.xpoints.length == poly.polygon.ypoints.length  && poly.polygon.xpoints.length == 3){
-		    addTriangle(ab);
-		}else{
-		    //If not, we save the bounding box
-		    //FIXME potentially wrong: saving a bounding box without its shape
-		    int index = addABObject(ab);
-		    addBoundingBox(ab.getBounds(), type, index, 0.f);
-		}
+
+	    for (int i = 0; i < poly.polygon.npoints; i++) {
+	    	// FIXME should we check if xpoint[i] or ypoint[i] are NULL?
+			String fact = String.format("polyline(%d, %s, %d, %d, %d).", index, type,
+				i, poly.polygon.xpoints[i], poly.polygon.ypoints[i]);
+			reasoner.addFact(fact);
+	    }
+
+		addBoundingBox(ab.getBounds(), type, index, 0.f);
 
 	}
         
@@ -178,18 +181,19 @@ public class VisionFact {
                 addBoundingBox(boundingBox,type, index,angle);
 	}
 
-	private void addTriangle(ABObject ab) {
-           int index = addABObject(ab);
-           Poly triangle = (Poly) ab;
-           String fact = String.format("triangle(%d, %d, %d, %d, %d, %d, %d ).", index, 
-                            triangle.polygon.xpoints[0], triangle.polygon.ypoints[0],
-                            triangle.polygon.xpoints[1], triangle.polygon.ypoints[1],
-                            triangle.polygon.xpoints[2], triangle.polygon.ypoints[2]);
-                                
+	// private void addTriangle(ABObject ab) {
+ //           int index = addABObject(ab);
+ //           Poly triangle = (Poly) ab;
+ //           //get the type of the object
+ //           String type = VisionFact.getABTypeString(ab.getType()).toLowerCase();
+ //           String fact = String.format("triangle(%d, %s, %d, %d, %d, %d, %d, %d).", index, type,
+ //                            triangle.polygon.xpoints[0], triangle.polygon.ypoints[0],
+ //                            triangle.polygon.xpoints[1], triangle.polygon.ypoints[1],
+ //                            triangle.polygon.xpoints[2], triangle.polygon.ypoints[2]);
 
-            reasoner.addFact(fact);
-            addBoundingBox(triangle.getBounds(), fact, index,0.f);
-        }
+ //            reasoner.addFact(fact);
+ //            addBoundingBox(triangle.getBounds(), type, index,0.f);
+ //        }
 
 	private void addBirdTypeToExecutor(ABType type) {
 		String ss = String.format("birdType(%s).", type.name().toLowerCase());
@@ -230,7 +234,7 @@ public class VisionFact {
 		case TNT:
 			return "tnt";
 		case Unknown:
-                        return "unknown";
+            return "unknown";
 		case WhiteBird:
 			break;
 		case Wood:
@@ -246,44 +250,52 @@ public class VisionFact {
 	}
 	
 //Needed for ground. To be deleted once ground is computed by the new vision
-	private void addGround(List<Block> blocks){
-	    int count = abobjects.size();
-	    for (OurVision.Block b : blocks) {
-		    // Each list member must be a block with at least one pixel.
-		    assert (!b.pixels.isEmpty());
+	// private void addGround(List<Block> blocks){
+	    // int count = abobjects.size();
+	    // for (OurVision.Block b : blocks) {
+		   //  // Each list member must be a block with at least one pixel.
+		   //  assert (!b.pixels.isEmpty());
 
-		    RotatedRect rr = b.getRBoundingBox();
-		    // Enlarge Rectangles by 2 pixels, as they are frequently "seen"
-		    // too small.
-		    rr.size.height += 2;
-		    rr.size.width += 2;
+		   //  RotatedRect rr = b.getRBoundingBox();
+		   //  // Enlarge Rectangles by 2 pixels, as they are frequently "seen"
+		   //  // too small.
+		   //  rr.size.height += 2;
+		   //  rr.size.width += 2;
 
-		    addRotatedRectToExecutor(count++,rr);
-	    }
+		   //  addRotatedRectToExecutor(count++,rr);
+	    // }
+	// }
+
+	private void addHills(List<ABObject> l_obj) {
+		for (ABObject ab : l_obj)
+			if (ab instanceof Poly)
+				addPoly(ab);
+			else
+				Log.severe("Hill is not a Poly!");
 	}
-	
+
 	//Needed for ground. To be deleted once ground is computed by the new vision
-	private void addRotatedRectToExecutor(int index,RotatedRect rr) {
-		//
-		// GB: avoids strange 90 or -90 degrees rotations
-		//
-		int width, height, angle;
-		if (rr.angle >= 45) {
-			width = (int) rr.size.height;
-			height = (int) rr.size.width;
-			angle = (int) rr.angle - 90;
-		} else if (rr.angle <= -45) {
-			width = (int) rr.size.height;
-			height = (int) rr.size.width;
-			angle = (int) rr.angle + 90;
-		} else {
-			width = (int) rr.size.width;
-			height = (int) rr.size.height;
-			angle = (int) rr.angle;
-		}
-		String fact = String.format("boundingBox(%d, %s, %d, %d, %d, %d, \"%f\").",
-				index, "ground", (int) rr.center.x, (int) rr.center.y, width,
-				height, Math.toRadians(angle));
-		reasoner.addFact(fact);
-	}
+	// private void addRotatedRectToExecutor(int index,RotatedRect rr) {
+	// 	//
+	// 	// GB: avoids strange 90 or -90 degrees rotations
+	// 	//
+	// 	int width, height, angle;
+	// 	if (rr.angle >= 45) {
+	// 		width = (int) rr.size.height;
+	// 		height = (int) rr.size.width;
+	// 		angle = (int) rr.angle - 90;
+	// 	} else if (rr.angle <= -45) {
+	// 		width = (int) rr.size.height;
+	// 		height = (int) rr.size.width;
+	// 		angle = (int) rr.angle + 90;
+	// 	} else {
+	// 		width = (int) rr.size.width;
+	// 		height = (int) rr.size.height;
+	// 		angle = (int) rr.angle;
+	// 	}
+	// 	String fact = String.format("boundingBox(%d, %s, %d, %d, %d, %d, \"%f\").",
+	// 			index, "ground", (int) rr.center.x, (int) rr.center.y, width,
+	// 			height, Math.toRadians(angle));
+	// 	reasoner.addFact(fact);
+	// }
 }
