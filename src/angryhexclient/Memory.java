@@ -27,38 +27,38 @@ import java.util.logging.Logger;
 import angryhexclient.util.Utils;
 
 public class Memory {
-	
+
 	private static Logger Log = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
 	final public static String MEMORY_DIR = System.getProperty("user.dir") + File.separator + "memory";
 	final public static String DELIMITER = ";";
-	
+
+	private static String getMemFilename(final int level) {
+		return String.format("%s%slevel%d.mem", Memory.MEMORY_DIR, File.separator, level);
+	}
+
 	public static void init() {
 		try {
-			// it's not needed because we delete the directory in the StrategyManager
-//			if (DebugUtils.DEBUG) {
-//				Utils.deleteDir(MEMORY_DIR);
-//			}
-			if (!new File(MEMORY_DIR).exists()) {
-				Utils.createDir(MEMORY_DIR);
-			}
-		} catch (IOException e) {
-			Log.severe("cannot init memory");
-		} catch (InterruptedException e) {
-			Log.severe("cannot init memory");
+			// it's not needed because we delete the directory in the
+			// StrategyManager
+			// if (DebugUtils.DEBUG) {
+			// Utils.deleteDir(MEMORY_DIR);
+			// }
+			if (!new File(Memory.MEMORY_DIR).exists())
+				Utils.createDir(Memory.MEMORY_DIR);
+		} catch (final IOException e) {
+			Memory.Log.severe("cannot init memory");
+		} catch (final InterruptedException e) {
+			Memory.Log.severe("cannot init memory");
 		}
 	}
-	
-	private static String getMemFilename(int level) {
-		return String.format("%s%slevel%d.mem", MEMORY_DIR, File.separator, level);
-	}
-	
-	public static List<Point.Double> load(int level) {
-		List<Point.Double> points = new LinkedList<Point.Double>();
-		
-		File file = new File(getMemFilename(level));
+
+	public static List<Point.Double> load(final int level) {
+		final List<Point.Double> points = new LinkedList<>();
+
+		final File file = new File(Memory.getMemFilename(level));
 		if (!file.exists()) {
-			Log.info("memory file does not exist: " + file.getName());
+			Memory.Log.info("memory file does not exist: " + file.getName());
 			return points;
 		}
 		BufferedReader reader = null;
@@ -66,27 +66,27 @@ public class Memory {
 			reader = new BufferedReader(new FileReader(file));
 			String line;
 			while ((line = reader.readLine()) != null) {
-				String[] coord = line.split(DELIMITER);
-				double x = Double.parseDouble(coord[0]);
-				double y = Double.parseDouble(coord[1]);
+				final String[] coord = line.split(Memory.DELIMITER);
+				final double x = Double.parseDouble(coord[0]);
+				final double y = Double.parseDouble(coord[1]);
 				points.add(new Point.Double(x, y));
 			}
 			reader.close();
-		} catch (FileNotFoundException e) {
-			Log.warning("could not read memory: " + e.getMessage());
-		} catch (IOException e) {
-			Log.warning("could not read memory: " + e.getMessage());
+		} catch (final FileNotFoundException e) {
+			Memory.Log.warning("could not read memory: " + e.getMessage());
+		} catch (final IOException e) {
+			Memory.Log.warning("could not read memory: " + e.getMessage());
 		}
 		return points;
 	}
-	
-	public static void store(int level, Point p) {
+
+	public static void store(final int level, final Point p) {
 		try {
-			PrintWriter printer = new PrintWriter(new FileWriter(getMemFilename(level), true));
-			printer.println(p.x + DELIMITER + p.y);
+			final PrintWriter printer = new PrintWriter(new FileWriter(Memory.getMemFilename(level), true));
+			printer.println(p.x + Memory.DELIMITER + p.y);
 			printer.close();
-		} catch (IOException e) {
-			Log.warning("could not store point for level " + level);
+		} catch (final IOException e) {
+			Memory.Log.warning("could not store point for level " + level + " to file " + Memory.getMemFilename(level));
 		}
 	}
 }

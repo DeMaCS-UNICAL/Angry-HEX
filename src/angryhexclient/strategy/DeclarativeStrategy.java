@@ -20,39 +20,39 @@ import ab.demo.other.ClientActionRobotJava;
 
 /**
  * @author Stefano, Dasha
- * 
+ *
  */
 public class DeclarativeStrategy extends StrategyManager {
 
 	private static Logger Log = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-	public DeclarativeStrategy(ClientActionRobotJava ar, byte startingLevel,
-			byte[] configureData) throws Exception {
+	public DeclarativeStrategy(final ClientActionRobotJava ar, final byte startingLevel, final byte[] configureData)
+			throws Exception {
 		super(ar, startingLevel, configureData);
 	}
 
 	/**
 	 * Find the next level to play
-	 * 
+	 *
 	 * @return next level to play
 	 */
+	@Override
 	protected byte findNextLevelToPlay() {
 
 		System.out.println("SM: searching for the next level to play");
 
-		byte newLevel = (byte) (1);
+		byte newLevel = (byte) 1;
 
 		String fact;
 
 		// add facts diff(i,j,k) reflecting the difference j between best scores
 		// and ours for level i if k=1 that we played best, otherwise k=0.
 		for (int i = 0; i < bestScores.length; i++) {
-			int diff = bestScores[i] - myScores[i];
-			if (diff > 0) {
+			final int diff = bestScores[i] - myScores[i];
+			if (diff > 0)
 				fact = "diff(" + i + "," + diff + "," + 0 + ").";
-			} else {
+			else
 				fact = "diff(" + i + "," + Math.abs(diff) + "," + 1 + ").";
-			}
 
 			StrategyReasoner.getInstance().addFact(fact);
 		}
@@ -77,24 +77,65 @@ public class DeclarativeStrategy extends StrategyManager {
 		// call hex to compute next level to be played
 		try {
 			StrategyReasoner.getInstance().reason();
-		} catch (UnsupportedOperationException e) {
-			Log.severe("could not call dlvhex: " + e.getMessage());
-		} catch (IOException e) {
-			Log.severe("could not call dlvhex: " + e.getMessage());
-		} catch (InterruptedException e) {
-			Log.severe("could not call dlvhex: " + e.getMessage());
+
+			newLevel = StrategyReasoner.getInstance().getNewLevel();
+			if (newLevel != 111)
+				newLevel += 1;
+			else
+				// newLevel = (byte) (1 + (new Random()).nextInt(21));
+				newLevel = (byte) (1 + new Random().nextInt(numberOfLevels));
+
+			System.out.println("SM: next level to be played " + newLevel);
+
+			return newLevel;
+
+		} catch (UnsupportedOperationException | IOException | InterruptedException e) {
+			DeclarativeStrategy.Log.severe("could not call dlvhex: " + e.getMessage());
+			DeclarativeStrategy.Log.severe("Using fall-back Strategy");
+
+			/**
+			 * First it tries to play each level one time
+			 */
+			for (int i = 0; i < numberOfLevels; i++)
+				if (myScores[i] == 0 && howManyTimes[i] == 0)
+					return (byte) (i + 1);
+
+			/**
+			 * Next it tries to play the levels that have the maximum difference
+			 * from the best scores
+			 */
+			int maxDifference = 0;
+			newLevel = (byte) 1;
+
+			for (int i = 0; i < numberOfLevels; i++) {
+				final int difference = bestScores[i] - myScores[i];
+				if (difference >= maxDifference && howManyTimes[i] < 3) {
+					maxDifference = difference;
+					newLevel = (byte) (i + 1);
+				}
+			}
+
+			if (maxDifference != 0)
+				return newLevel;
+
+			/**
+			 * Finally it tries to play the levels that we perform better than
+			 * best scores and that have the minimum difference from the best
+			 * score
+			 */
+			int minDifference = Integer.MAX_VALUE;
+			newLevel = (byte) (new Random().nextInt(numberOfLevels) + 1);
+
+			for (int i = 0; i < numberOfLevels; i++) {
+				final int difference = myScores[i] - bestScores[i];
+				if (difference >= 0 && difference < minDifference && howManyTimes[i] < 5) {
+					minDifference = difference;
+					newLevel = (byte) (i + 1);
+				}
+			}
+
+			return newLevel;
+
 		}
-
-		newLevel = StrategyReasoner.getInstance().getNewLevel();
-		if (newLevel!=111)
-			newLevel+=1;
-		else {
-			//newLevel = (byte) (1 + (new Random()).nextInt(21));
-			newLevel = (byte) (1 + (new Random()).nextInt(numberOfLevels));
-		}
-
-		System.out.println("SM: next level to be played " + newLevel);
-
-		return newLevel;
 	}
 }

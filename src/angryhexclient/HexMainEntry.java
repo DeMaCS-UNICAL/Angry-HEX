@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import ab.demo.other.ClientActionRobotJava;
 import angryhexclient.util.LogFormatter;
 import angryhexclient.util.OutConsoleHandler;
 
@@ -23,26 +24,31 @@ public class HexMainEntry {
 
 	private static Logger Log = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-	// the entry of the software
-	public static void main(String args[]) {
+	/**
+	 * This is the main entry of the agent. It creates the server communicator
+	 * It creates and starts our agent (HexAgent)
+	 *
+	 * run the jar: java -jar file.jar [127.0.0.1 [-level 3]]
+	 */
+	public static void main(final String args[]) {
 
 		// setup logger
 		// TODO distinguish debug levels
-		OutConsoleHandler ch = new OutConsoleHandler();
+		final OutConsoleHandler ch = new OutConsoleHandler();
 		ch.setFormatter(new LogFormatter());
 		ch.setLevel(Level.ALL);
-		Log.addHandler(ch);
-		Log.setLevel(Level.ALL);
+		HexMainEntry.Log.addHandler(ch);
+		HexMainEntry.Log.setLevel(Level.ALL);
 
-		Log.info("starting HexMainEntry main");
+		HexMainEntry.Log.info("starting HexMainEntry main");
 		try {
 
 			// Rips off any dlvhex2 processes which were left
-			Log.info("killing leftover processes");
+			HexMainEntry.Log.info("killing leftover processes");
 			try {
 				Runtime.getRuntime().exec("killall -9 dlvhex2");
-			} catch (IOException e1) {
-				Log.warning("cannot killall dlvhex2");
+			} catch (final IOException e1) {
+				HexMainEntry.Log.warning("cannot killall dlvhex2");
 			}
 
 			// check arguments for ip address and initial level
@@ -51,25 +57,29 @@ public class HexMainEntry {
 			if (args.length > 0) {
 				ipaddress = args[0];
 
-				if (args.length > 2 && args[1].equals("-level")) {
+				if (args.length > 2 && args[1].equals("-level"))
 					initialLevel = (byte) Integer.parseInt(args[2]);
-				}
 			}
 
 			// setup agent
 			try {
-				Log.info("creating HexActionRobot at '"+ipaddress+"'");
-				HexActionRobot ar = new HexActionRobot(ipaddress);
-				Log.info("creating HexAgent with level "+Integer.toString(initialLevel));
-				HexAgent ha = new HexAgent(ar, initialLevel);
-				Thread haThread = new Thread(ha);
-				haThread.start();
-			} catch (Exception e) {
-				Log.severe("Cannot init agent: " + e.getMessage());
+				// create the object to communicate with the server
+				HexMainEntry.Log.info("creating HexActionRobot at '" + ipaddress + "'");
+				final ClientActionRobotJava ar = new ClientActionRobotJava(ipaddress);
+
+				// create the agent
+				HexMainEntry.Log.info("creating HexAgent with level " + Integer.toString(initialLevel));
+				final HexAgent ha = new HexAgent(ar, initialLevel);
+
+				// start the agent
+				new Thread(ha).start();
+
+			} catch (final Exception e) {
+				HexMainEntry.Log.severe("Cannot init agent: " + e.getMessage());
 			}
 
-		} catch (Exception e) {
-			Log.severe("General Error: " + e.getMessage());
+		} catch (final Exception e) {
+			HexMainEntry.Log.severe("General Error: " + e.getMessage());
 		}
 	}
 }

@@ -18,20 +18,21 @@ import ab.demo.other.ClientActionRobotJava;
 
 /**
  * @author Stefano
- * 
+ *
  */
 public class JavaStrategy extends StrategyManager {
 
-	public JavaStrategy(ClientActionRobotJava ar, byte startingLevel,
-			byte[] configureData) throws Exception {
+	public JavaStrategy(final ClientActionRobotJava ar, final byte startingLevel, final byte[] configureData)
+			throws Exception {
 		super(ar, startingLevel, configureData);
 	}
 
 	/**
 	 * Find the next level to play
-	 * 
+	 *
 	 * @return next level to play
 	 */
+	@Override
 	protected byte findNextLevelToPlay() {
 
 		/**
@@ -46,10 +47,10 @@ public class JavaStrategy extends StrategyManager {
 		 * from the best scores
 		 */
 		int maxDifference = 0;
-		byte newLevel = (byte) (1);
+		byte newLevel = (byte) 1;
 
 		for (int i = 0; i < numberOfLevels; i++) {
-			int difference = bestScores[i] - myScores[i];
+			final int difference = bestScores[i] - myScores[i];
 			if (difference >= maxDifference && howManyTimes[i] < 3) {
 				maxDifference = difference;
 				newLevel = (byte) (i + 1);
@@ -67,9 +68,8 @@ public class JavaStrategy extends StrategyManager {
 		newLevel = (byte) (new Random().nextInt(numberOfLevels) + 1);
 
 		for (int i = 0; i < numberOfLevels; i++) {
-			int difference = myScores[i] - bestScores[i];
-			if (difference >= 0 && difference < minDifference
-					&& howManyTimes[i] < 5) {
+			final int difference = myScores[i] - bestScores[i];
+			if (difference >= 0 && difference < minDifference && howManyTimes[i] < 5) {
 				minDifference = difference;
 				newLevel = (byte) (i + 1);
 			}

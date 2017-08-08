@@ -19,20 +19,12 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 
 public class Utils {
-	
+
 	// global constants
 	final public static String DLV_DIR = "dlv";
-	
-	// global tools
-	public static void deleteDir(String file) throws IOException, InterruptedException {
-		Runtime.getRuntime().exec(String.format("rm -rf %s", file)).waitFor();
-	}
-	
-	public static void createDir(String file) throws IOException, InterruptedException {
-		Runtime.getRuntime().exec(String.format("mkdir %s", file)).waitFor();
-	}
 
-	public static void copy(File source, File dest) throws IOException {
+	@SuppressWarnings("resource")
+	public static void copy(final File source, final File dest) throws IOException {
 		FileChannel inputChannel = null;
 		FileChannel outputChannel = null;
 		try {
@@ -43,5 +35,14 @@ public class Utils {
 			inputChannel.close();
 			outputChannel.close();
 		}
+	}
+
+	public static void createDir(final String file) throws IOException, InterruptedException {
+		Runtime.getRuntime().exec(String.format("mkdir %s", file)).waitFor();
+	}
+
+	// global tools
+	public static void deleteDir(final String file) throws IOException, InterruptedException {
+		Runtime.getRuntime().exec(String.format("rm -rf %s", file)).waitFor();
 	}
 }

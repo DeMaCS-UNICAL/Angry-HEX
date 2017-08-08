@@ -126,7 +126,7 @@ public class Configuration {
 
 	private static void initialize() {
 
-		if (prop == null)
+		if (Configuration.prop == null)
 			try {
 				Configuration.prop = new Properties();
 				Configuration.Log.info("loading configuration from '" + Configuration.configfile + "'");
@@ -138,7 +138,7 @@ public class Configuration {
 
 				Configuration.prop = null;
 			}
-		
+
 	}
 
 	public static boolean isCalibrationMode() {

@@ -24,16 +24,11 @@ import angryhexclient.Memory;
 
 /**
  * @author Stefano
- * 
+ *
  */
 public abstract class StrategyManager {
 
 	protected byte currentLevel;
-	
-	/**
-	 * Each bird launch corresponds to a turn.
-	 */
-	protected int currentTurn;
 
 	/**
 	 * Round Info: a byte indicates the ongoing round of the competition. 1: 1st
@@ -69,14 +64,12 @@ public abstract class StrategyManager {
 
 	protected ClientActionRobotJava ar;
 
-	public StrategyManager(ClientActionRobotJava ar, byte startingLevel,
-			byte[] configureData) throws Exception {
+	public StrategyManager(final ClientActionRobotJava ar, final byte startingLevel, final byte[] configureData)
+			throws Exception {
 
 		this.ar = ar;
 
-		this.currentLevel = startingLevel;
-		
-		this.currentTurn = 0;
+		currentLevel = startingLevel;
 
 		roundInfo = configureData[0];
 		// based on its value we can choose a different strategy
@@ -86,23 +79,23 @@ public abstract class StrategyManager {
 		if (roundInfo != 2)
 			try {
 
-				File theDir = new File(Memory.MEMORY_DIR);
+				final File theDir = new File(Memory.MEMORY_DIR);
 				// if the directory exist, we remove it
 				if (theDir.exists()) {
-					Process p = Runtime.getRuntime().exec("rm -rf " + Memory.MEMORY_DIR);
+					final Process p = Runtime.getRuntime().exec("rm -rf " + Memory.MEMORY_DIR);
 					p.waitFor();
 					// boolean result = theDir.delete();
 					// System.out.println(result);
 					// if (result)
 					// System.out.println("DIR memory deleted");
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				e.printStackTrace();
 			}
 
 		timeLimit = configureData[1];
 		// based on this variable we can decide to play in a different way
-		
+
 		System.out.println("timeLimit: " + timeLimit);
 
 		numberOfLevels = configureData[2];
@@ -110,8 +103,7 @@ public abstract class StrategyManager {
 		System.out.println("numberOfLevels: " + numberOfLevels);
 
 		if (numberOfLevels > 21)
-			throw new Exception(
-					"*** Number of Levels not allowed by the rule of the Angry Birds AI Competition ***");
+			throw new Exception("*** Number of Levels not allowed by the rule of the Angry Birds AI Competition ***");
 
 		myScores = new int[numberOfLevels];
 
@@ -128,44 +120,28 @@ public abstract class StrategyManager {
 	}
 
 	/**
-	 * Initialize myScores
+	 * Find the next level to play
+	 *
+	 * @return next level to play
 	 */
-	private void initializeMyScores() {
+	protected abstract byte findNextLevelToPlay();
 
-		int[] myNewScores = ar.checkMyScore();
-
-		for (int i = 0; i < numberOfLevels; i++)
-			myScores[i] = myNewScores[i];
-
+	/**
+	 * Returns the current level
+	 *
+	 * @return the currentLevel
+	 */
+	public byte getCurrentLevel() {
+		return currentLevel;
 	}
 
 	/**
-	 * Update myScores
 	 * 
-	 * @throws MyScoreUpdateException
+	 * @return
 	 */
-	private void updateMyScores() {
-
-		int[] myNewScores = ar.checkMyScore();
-
-		// System.out.println("CURRENT LEVEL " + currentLevel);
-		// for (int i = 0; i < numberOfLevels; i++)
-		// System.out.println("SCORE " + (i + 1) + ": " + myNewScores[i]);
-
-		myScores[currentLevel - 1] = myNewScores[currentLevel - 1];
-
-	}
-
-	/**
-	 * Update bestScores
-	 */
-	private void updateBestScores() {
-
-		int[] newBestScores = ar.checkScore();
-
-		for (int i = 0; i < numberOfLevels; i++)
-			bestScores[i] = newBestScores[i];
-
+	public int getHowManyTimesCurrentLevel() {
+		//TODO check if currentLevel - 1 is correct
+		return howManyTimes[currentLevel - 1];
 	}
 
 	/**
@@ -177,73 +153,37 @@ public abstract class StrategyManager {
 	}
 
 	/**
-	 * Returns the current level
-	 * 
-	 * @return the currentLevel
+	 * Initialize myScores
 	 */
-	public byte getCurrentLevel() {
-		return currentLevel;
-	}
+	private void initializeMyScores() {
 
-	/**
-	 * Update currentLevel
-	 * 
-	 * @param state
-	 * @return
-	 */
-	public boolean updateCurrentLevel(GameState state) {
+		final int[] myNewScores = ar.checkMyScore();
 
-		byte tentativeCurrentLevel = currentLevel;
-
-		if (state == GameState.WON) {
-			tentativeCurrentLevel = findNextLevelToPlay();
-			// System.out.println("tentativeCurrentLevel: " +
-			// tentativeCurrentLevel);
-			ar.loadLevel(tentativeCurrentLevel);
-
-			updateMyScores();
-
-			System.out.println("\nLevel: " + currentLevel + " NEW score: "
-					+ myScores[currentLevel - 1]);
-			currentLevel = tentativeCurrentLevel;
-			
-		}
-		else {
-			currentLevel = findNextLevelToPlay();	
-		}
-
-		//currentLevel = findNextLevelToPlay();
-
-		System.out.println("NEW currentLevel: " + currentLevel + "\n");
-
-		if (state == GameState.LOST || currentLevel != tentativeCurrentLevel)
-			return true;
-
-		return false;
+		for (int i = 0; i < numberOfLevels; i++)
+			myScores[i] = myNewScores[i];
 
 	}
-
-	/**
-	 * Find the next level to play
-	 * 
-	 * @return next level to play
-	 */
-	protected abstract byte findNextLevelToPlay();
 
 	/**
 	 * Load the current level
 	 */
 	public void loadCurrentLevel() {
-		ar.loadLevel((byte) currentLevel);
+		ar.loadLevel(currentLevel);
 	}
 
 	/**
 	 * Load the next level to play
-	 * 
+	 *
 	 * @param state
 	 */
-	public void loadNewLevel(GameState state) {
+	public void loadNewLevel(final GameState state) {
 
+		if(state == null){
+			loadCurrentLevel();
+			return;
+		}
+			
+		
 		if (roundInfo == 3 || roundInfo == 4)
 			updateBestScores();
 
@@ -265,20 +205,20 @@ public abstract class StrategyManager {
 
 		if (iHaveToLoadTheLevel)
 			ar.loadLevel(currentLevel);
-		
-		currentTurn = 0;
+		else
+			ar.restartLevel();
 
 	}
 
 	/**
 	 * Save myScores on file
-	 * 
+	 *
 	 * @param fileName
 	 * @throws IOException
 	 */
-	public void saveScores(String fileName) throws IOException {
+	public void saveScores(final String fileName) throws IOException {
 
-		PrintWriter log = new PrintWriter(new FileWriter(fileName, false));
+		final PrintWriter log = new PrintWriter(new FileWriter(fileName, false));
 
 		for (int i = 0; i < numberOfLevels; i++)
 			log.println("Level " + (i + 1) + ";" + myScores[i]);
@@ -286,21 +226,72 @@ public abstract class StrategyManager {
 		log.close();
 
 	}
-	
-	public int getCurrentTurn(){
-	    return currentTurn;
+
+	/**
+	 * Update bestScores
+	 */
+	private void updateBestScores() {
+
+		final int[] newBestScores = ar.checkScore();
+
+		for (int i = 0; i < numberOfLevels; i++)
+			bestScores[i] = newBestScores[i];
+
 	}
-	
-	public void increaseCurrentTurn(){
-	    currentTurn++;
+
+	/**
+	 * Update currentLevel
+	 *
+	 * @param state
+	 * @return
+	 */
+	public boolean updateCurrentLevel(final GameState state) {
+
+		byte tentativeCurrentLevel = currentLevel;
+
+		if (state == GameState.WON) {
+			tentativeCurrentLevel = findNextLevelToPlay();
+			// System.out.println("tentativeCurrentLevel: " +
+			// tentativeCurrentLevel);
+			ar.loadLevel(tentativeCurrentLevel);
+
+			updateMyScores();
+
+			System.out.println("\nLevel: " + currentLevel + " NEW score: " + myScores[currentLevel - 1]);
+			currentLevel = tentativeCurrentLevel;
+
+		} else
+			currentLevel = findNextLevelToPlay();
+
+		// currentLevel = findNextLevelToPlay();
+
+		System.out.println("NEW currentLevel: " + currentLevel + "\n");
+
+		if (state == GameState.LOST || currentLevel != tentativeCurrentLevel)
+			return true;
+
+		return false;
+
 	}
-	
-	public int getHowManyTimesCurrentLevel(){
-	    return howManyTimes[(int)currentLevel];
+
+	/**
+	 * Update myScores
+	 *
+	 * @throws MyScoreUpdateException
+	 */
+	private void updateMyScores() {
+
+		final int[] myNewScores = ar.checkMyScore();
+
+		// System.out.println("CURRENT LEVEL " + currentLevel);
+		// for (int i = 0; i < numberOfLevels; i++)
+		// System.out.println("SCORE " + (i + 1) + ": " + myNewScores[i]);
+
+		myScores[currentLevel - 1] = myNewScores[currentLevel - 1];
+
 	}
 
 	// updates score of current level
-	public void updateScore(int score) {
+	public void updateScore(final int score) {
 	}
 }
-

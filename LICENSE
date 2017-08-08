@@ -1,6 +1,15 @@
 Angry-HEX - an artificial player for Angry Birds based on declarative knowledge bases
-Copyright (C) 2012-2015 Francesco Calimeri, Michael Fink, Stefano Germano, Andreas Humenberger, Giovambattista Ianni, Christoph Redl, Daria Stepanova, Andrea Tucci, Anton Wimmer. <angryhex@mat.unical.it>
-
+Copyright (C) <angryhex@mat.unical.it>
+ 2012-2017 Francesco Calimeri, Stefano Germano
+ 2013      Anton Wimmer
+ 2013-2015 Michael Fink
+ 2013-2016 Giovambattista Ianni
+ 2013-2017 Christoph Redl
+ 2014-2015 Andreas Humenberger, Andrea Tucci
+ 2014-2017 Daria Stepanova
+ 2016-2017 Valeria Fionda, Zeynep G. Saribatur, Peter Schüller
+ 2017      Aldo Marzullo
+ 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.

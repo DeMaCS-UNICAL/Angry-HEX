@@ -23,9 +23,13 @@ DLV_URL=http://www.dlvsystem.com/files/${DLV}
 
 DLVHEX=core
 DLVHEX_URL=https://github.com/hexhex/${DLVHEX}.git
+DLVHEX_BRANCHORTAG=Release_2_5_0 # does not build always
+DLVHEX_BRANCHORTAG=015095f0bd143
 
-BOX2D=Box2D_v2.2.1
-BOX2D_URL=http://box2d.googlecode.com/files/${BOX2D}.zip
+BOX2Dversion=2.3.1
+BOX2D_file=v${BOX2Dversion}
+BOX2D_URL=https://github.com/DeMaCS-UNICAL/Angry-HEX/releases/download/dependencies/${BOX2D_file}.zip
+BOX2D_folder=Box2D-${BOX2Dversion}
 
 ANGRYHEX=angryhex
 
@@ -154,10 +158,19 @@ installdlvhex() {
 	RUN  rm -rf ${DLVHEX}
 	RUN  git clone --recursive ${DLVHEX_URL}
 	RUN  cd ${DLVHEX}
+	RUN  git checkout ${DLVHEX_BRANCHORTAG}
 	RUN  ./bootstrap.sh
 	RUN  ./configure --without-buildclaspgringo
 	RUN  make -j4
 	RUN  make install
+	# otherwise libraries might not be found
+	if [[ ${OSTYPE} == osx ]]; then
+		echo "running update_dyld_shared_cache: required sudo. Please, insert Password:"
+		RUN sudo update_dyld_shared_cache
+	else
+		echo "running ldconfig: required sudo. Please, insert Password:"
+		RUN sudo ldconfig
+	fi
 
 	echo "SUCCESS"
 	popdir
@@ -176,13 +189,21 @@ installbox2d() {
 
 	RUN  rm -rf /usr/local/include/Box2D/
 	RUN  cd /tmp
-	RUN  rm -rf ${BOX2D}
+	RUN  rm -rf ${BOX2D_folder}
 	RUN  wget ${BOX2D_URL}
-	RUN  unzip ${BOX2D}
-	RUN  cd ${BOX2D}/Build
+	RUN  unzip ${BOX2D_file}
+	RUN  cd ${BOX2D_folder}/Box2D/Build
 	RUN  cmake -DBOX2D_INSTALL=ON -DBOX2D_BUILD_SHARED=ON -DBOX2D_BUILD_STATIC=OFF -DBOX2D_BUILD_EXAMPLES=OFF ..
 	RUN  make -j4
 	RUN  make install
+	# otherwise libraries might not be found
+	if [[ ${OSTYPE} == osx ]]; then
+		echo "running update_dyld_shared_cache: required sudo. Please, insert Password:"
+		RUN sudo update_dyld_shared_cache
+	else
+		echo "running ldconfig: required sudo. Please, insert Password:"
+		RUN sudo ldconfig
+	fi
 
 	echo "SUCCESS"
 	popdir
@@ -241,6 +262,14 @@ installagentplugin() {
 
 	RUN  cd ${D_AGENT}
 	RUN  make plugin
+	# otherwise libraries might not be found
+	if [[ ${OSTYPE} == osx ]]; then
+		echo "running update_dyld_shared_cache: required sudo. Please, insert Password:"
+		RUN sudo update_dyld_shared_cache
+	else
+		echo "running ldconfig: required sudo. Please, insert Password:"
+		RUN sudo ldconfig
+	fi
 
 	echo "SUCCESS"
 	popdir
@@ -342,7 +371,7 @@ case $CMD in
 	"install")
 		renewlog
  		case $ARG in
-			"all")          installdlv && installdlvhex && installbox2d && installagent ;;
+			"all")           installdlv && installdlvhex && installbox2d && installagent ;; 
 			"dlv")          installdlv -f ;;
 			"dlvhex")       installdlvhex -f ;;
 			"box2d")        installbox2d -f ;;
@@ -370,3 +399,4 @@ case $CMD in
    *) echo "Invalid command: $CMD" && usage 1
 esac
 
+# vim:noet:
