@@ -27,7 +27,7 @@ DLVHEX_BRANCHORTAG=Release_2_5_0 # does not build always
 DLVHEX_BRANCHORTAG=015095f0bd143
 
 BOX2Dversion=2.3.1
-BOX2D_file=v${BOX2Dversion}
+BOX2D_file=Box2D-${BOX2Dversion}
 BOX2D_URL=https://github.com/DeMaCS-UNICAL/Angry-HEX/releases/download/dependencies/${BOX2D_file}.zip
 BOX2D_folder=Box2D-${BOX2Dversion}
 
