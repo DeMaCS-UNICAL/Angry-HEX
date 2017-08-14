@@ -223,8 +223,8 @@ installagent() {
 		RUN  cd ${D_AGENT}
 		RUN  make all
 	else
-		packjava
-		packplugin
+		#packjava
+		#packplugin
         
 		RUN  cd ${D_AGENT}
 		RUN  make all
