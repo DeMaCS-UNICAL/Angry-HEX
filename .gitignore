@@ -129,3 +129,11 @@ hs_err_pid*
 
 # chrome script
 Application Cache/
+
+
+### Ruby ###
+/docs/.bundle/
+/docs/vendor/bundle
+/docs/lib/bundler/man/
+/docs/_site/
+Gemfile.lock
