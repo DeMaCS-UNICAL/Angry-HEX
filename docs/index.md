@@ -19,17 +19,18 @@ This layer is also realized declaratively as an (ordinary) ASP program encoding 
 For each level, the **Strategy** layer keeps tracks of previously achieved scores and previously selected initial target objects.
 
 ## Core Team
- - Francesco Calimeri [2013-2017]
+ - Francesco Calimeri [2013-2018]
  - Michael Fink [2013-2015]
  - Valeria Fionda [2016-2017]
- - Stefano Germano [2013-2017]
+ - Nikolaus Funk [2018]
+ - Stefano Germano [2013-2018]
  - Andreas Humenberger [2014-2015]
  - Giovambattista Ianni [2013-2016]
- - Aldo Marzullo [2017]
- - Christoph Redl [2013-2017]
- - Zeynep G. Saribatur [2016-2017]
- - Peter Schüller [2016-2017]
- - Daria Stepanova [2014-2017]
+ - Aldo Marzullo [2017-2018]
+ - Christoph Redl [2013-2018]
+ - Zeynep G. Saribatur [2016-2018]
+ - Peter Schüller [2016-2018]
+ - Daria Stepanova [2014-2018]
  - Andrea Tucci [2014-2015]
  - Anton Wimmer [2013]
 
