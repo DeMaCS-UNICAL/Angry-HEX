@@ -1,6 +1,6 @@
 # Angry-HEX
 
-Angry-HEX is an artificial player for the popular video game Angry Birds; it participated in the 2013, 2014, 2015 and 2016 [Angry Birds AI Competition](http://aibirds.org).
+Angry-HEX is an artificial player for the popular video game Angry Birds; it participated in the 2013, 2014, 2015, 2016, 2017, and 2018 [Angry Birds AI Competition](http://aibirds.org).
 
 The agent is based on declarative knowledge bases, and features a combination of traditional imperative programming and declarative programming that allows to achieve high flexibility in strategy design and knowledge modelling. In particular, it relies on the use of *Answer Set Programming* (*ASP*) and [*HEX programs*](http://www.kr.tuwien.ac.at/research/systems/dlvhex).
 
