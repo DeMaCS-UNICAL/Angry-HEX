@@ -25,6 +25,24 @@ public class Configuration {
 	private static final Logger Log = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	private static Properties prop = null;
 
+	public static String getDebugMarks(){
+		Configuration.initialize();
+
+		if(Configuration.prop == null)
+			return "";
+
+		return Configuration.prop.getProperty("debugmarks");
+	}
+
+	public static String getInspection(){
+		Configuration.initialize();
+
+		if(Configuration.prop == null)
+			return "";
+		
+		return Configuration.prop.getProperty("inspection");
+	}
+
 	public static int getFastshootThreshold() {
 		Configuration.initialize();
 		if (Configuration.prop == null)
@@ -156,4 +174,23 @@ public class Configuration {
 		return retVal;
 	}
 
+	public static int isBenchmarkMode() {
+		Configuration.initialize();
+		final String b = Configuration.prop.getProperty("benchmark");
+		final boolean retVal = !b.equals("false") && !b.equals("no") && !b.equals("0");
+		if(retVal==true){
+			final int a = Integer.parseInt(Configuration.prop.getProperty("benchmarktype"));
+			return a;
+		}
+		return 0;
+		//return retVal;
+	}
+
+	public static int getReasonerTimeout() {
+		Configuration.initialize();
+		if (Configuration.prop == null)
+			return 0;
+
+		return Integer.parseInt(Configuration.prop.getProperty("reasonerTimeout"));
+	}
 }

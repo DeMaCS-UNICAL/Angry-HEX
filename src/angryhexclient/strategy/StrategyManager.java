@@ -16,17 +16,21 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.logging.Logger;
 
 import ab.demo.other.ClientActionRobotJava;
 import ab.vision.GameStateExtractor.GameState;
 import angryhexclient.Configuration;
 import angryhexclient.Memory;
+import angryhexclient.TerminateAgentException;
 
 /**
  * @author Stefano
  *
  */
 public abstract class StrategyManager {
+
+	protected static final Logger Log = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
 	protected byte currentLevel;
 
@@ -74,7 +78,8 @@ public abstract class StrategyManager {
 		roundInfo = configureData[0];
 		// based on its value we can choose a different strategy
 
-		System.out.println("roundInfo: " + roundInfo);
+		Log.info("roundInfo: " + roundInfo);
+
 
 		if (roundInfo != 2)
 			try {
@@ -96,11 +101,11 @@ public abstract class StrategyManager {
 		timeLimit = configureData[1];
 		// based on this variable we can decide to play in a different way
 
-		System.out.println("timeLimit: " + timeLimit);
+		Log.info("timeLimit: " + timeLimit);
 
 		numberOfLevels = configureData[2];
 
-		System.out.println("numberOfLevels: " + numberOfLevels);
+		Log.info("numberOfLevels: " + numberOfLevels);
 
 		if (numberOfLevels > 21)
 			throw new Exception("*** Number of Levels not allowed by the rule of the Angry Birds AI Competition ***");
@@ -124,7 +129,7 @@ public abstract class StrategyManager {
 	 *
 	 * @return next level to play
 	 */
-	protected abstract byte findNextLevelToPlay();
+	protected abstract byte findNextLevelToPlay() throws TerminateAgentException;
 
 	/**
 	 * Returns the current level
@@ -176,7 +181,7 @@ public abstract class StrategyManager {
 	 *
 	 * @param state
 	 */
-	public void loadNewLevel(final GameState state) {
+	public void loadNewLevel(final GameState state) throws TerminateAgentException {
 
 		if(state == null){
 			loadCurrentLevel();
@@ -197,17 +202,25 @@ public abstract class StrategyManager {
 			howManyTimes[currentLevel - 1]++;
 
 			iHaveToLoadTheLevel = updateCurrentLevel(state);
-
-			// System.out.println("iHaveToLoadTheLevel: " +
-			// iHaveToLoadTheLevel);
-
+			Log.info("iHaveToLoadTheLevel="+iHaveToLoadTheLevel);
+			Log.info("currentLevel="+currentLevel);
 		}
 
-		if (iHaveToLoadTheLevel)
-			ar.loadLevel(currentLevel);
-		else
-			ar.restartLevel();
-
+		if (iHaveToLoadTheLevel){
+			if (currentLevel!=-1){
+				ar.loadLevel(currentLevel);
+				Log.info("chose level - loading currentLevel="+currentLevel);
+			}
+			else{
+				Log.info("currentLevel==-1 - stop playing");
+				return;
+			}	
+		}
+		else{
+			// ZGS: below was restarting the level when everything is in order - commented out for now
+			//ar.restartLevel();
+			return;
+		}
 	}
 
 	/**
@@ -245,19 +258,25 @@ public abstract class StrategyManager {
 	 * @param state
 	 * @return
 	 */
-	public boolean updateCurrentLevel(final GameState state) {
+	public boolean updateCurrentLevel(final GameState state) throws TerminateAgentException {
 
 		byte tentativeCurrentLevel = currentLevel;
 
 		if (state == GameState.WON) {
 			tentativeCurrentLevel = findNextLevelToPlay();
-			// System.out.println("tentativeCurrentLevel: " +
-			// tentativeCurrentLevel);
+			Log.info("tentativeCurrentLevel: " + tentativeCurrentLevel);
+			if (tentativeCurrentLevel==-1){
+				Log.warning("tentativeCurrentLevel==-1 - stop playing");
+				currentLevel = tentativeCurrentLevel;
+				return true;
+			}
+
+			Log.fine("loading tentativeCurrentLevel="+tentativeCurrentLevel);
 			ar.loadLevel(tentativeCurrentLevel);
 
 			updateMyScores();
 
-			System.out.println("\nLevel: " + currentLevel + " NEW score: " + myScores[currentLevel - 1]);
+			Log.info("\nLevel: " + currentLevel + " NEW score: " + myScores[currentLevel - 1]);
 			currentLevel = tentativeCurrentLevel;
 
 		} else
@@ -265,7 +284,7 @@ public abstract class StrategyManager {
 
 		// currentLevel = findNextLevelToPlay();
 
-		System.out.println("NEW currentLevel: " + currentLevel + "\n");
+		Log.info("NEW currentLevel: " + currentLevel + "\n");
 
 		if (state == GameState.LOST || currentLevel != tentativeCurrentLevel)
 			return true;

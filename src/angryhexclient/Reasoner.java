@@ -73,13 +73,37 @@ public abstract class Reasoner {
 		}
 		writer.close();
 
+		// save facts file and encodings (if debug mode)
+		saveDebugHexWithInfo(factsFile);
+
 		// call dlvhex
 		String cmd = String.format("%s --filter=%s %s %s", DLVHEX_CMDARGS,
 				filterPred, factsFile, encFile);
-		System.out.println("Calling dlvhex2: " + cmd);
+		Log.info("Calling dlvhex2: " + cmd);
 		Process process = Runtime.getRuntime().exec(cmd);
-		process.waitFor();
-		System.out.println("Called dlvhex2");
+		int timeout = Configuration.getReasonerTimeout();
+		if (timeout != 0) {
+			if (!process.waitFor(timeout, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+				// timeout
+				Log.warning("dlvhex2 was aborted after " + timeout + " milliseconds timeout (config.properties); did not find answer sets");
+				if( Configuration.isDebugMode() ){
+					// display stderr obtained so far
+					BufferedReader hexerr = new BufferedReader(new InputStreamReader(
+							process.getErrorStream()));
+					String currentErrLine;
+					while (hexerr.ready()) {
+						Log.info("[stderr] "+hexerr.readLine());
+					}
+				}
+				// kill
+				process.destroy();
+				cleanUp(factsFile);
+				return;
+			}
+		}else{
+			process.waitFor();
+		}
+		Log.info("Called dlvhex2");
 
 		// read output of dlvhex and store in dlvhexOutput
 		BufferedReader bufferedReader = new BufferedReader(
@@ -94,21 +118,24 @@ public abstract class Reasoner {
 			dlvhexOutput += currentLine + "\n";
 		}
 		while ((currentErrLine = hexerr.readLine()) != null) {
-			Log.severe(currentErrLine);
+			Log.info("[stderr] "+currentErrLine);
 		}
 
-		// cleanup
-		facts.clear();
-		// keep facts file if debug mode
-		saveDebugHexWithInfo(factsFile);
-		// delete facts file
-		new File(factsFile).delete();
+		cleanUp(factsFile);
 		// parse response of dlvhex
 		parseOutput();
 	}
 
-	protected void parseOutput() {
+	public void cleanUp(final String factsFile) {
+		// cleanup
+		facts.clear();
+		// delete facts file
+		new File(factsFile).delete();
+		// clear parsed atoms
 		clear();
+	}
+
+	protected void parseOutput() {
 		Matcher m = filterRegex.matcher(dlvhexOutput);
 		while (m.find()) {
 			storeAtom(m);

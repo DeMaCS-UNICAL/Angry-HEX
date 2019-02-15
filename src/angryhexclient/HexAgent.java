@@ -41,6 +41,7 @@ import angryhexclient.tactic.DeclarativeTactic;
 import angryhexclient.tactic.Tactic;
 import angryhexclient.tactic.TacticManager;
 import angryhexclient.util.DebugUtils;
+import angryhexclient.TerminateAgentException;
 
 /**
  * This is the agent containing all the tactics
@@ -67,18 +68,25 @@ public class HexAgent implements Runnable {
 	public HexAgent(final ClientActionRobotJava ar, final byte startingLevel) throws Exception {
 		this.ar = ar;
 
-		final byte[] configureData = ar.configure(ClientActionRobot.intToByteArray(Configuration.getTeamID()));
-		// TODO: configureData has 4 bytes as far as I can see - where are the
-		// meanings of these bytes documented? we use the first three TODO we
-		// should *interpret* these bytes here and store them to properly named
-		// variables before giving them to other system parts
-		// with the following we can override numberOfLevels
-		// configureData[2] = 2;
+		byte[] configureData;
+		try {
+			configureData = ar.configure(ClientActionRobot.intToByteArray(Configuration.getTeamID()));
+
+			// TODO: configureData has 4 bytes as far as I can see - where are the
+			// meanings of these bytes documented? we use the first three TODO we
+			// should *interpret* these bytes here and store them to properly named
+			// variables before giving them to other system parts
+			// with the following we can override numberOfLevels
+			// configureData[2] = 2;
+		} catch (final NullPointerException e) {
+			HexAgent.Log.severe("NullPointerException in HexAgent: this happens if the server is not running");
+			throw e;
+		}
+
 		if (BenchmarkStrategy.BENCHMARK)
 			strategyManager = new BenchmarkStrategy(ar, startingLevel, configureData);
 		else
 			strategyManager = new DeclarativeStrategy(ar, startingLevel, configureData);
-
 	}
 
 	private void emptyQueueException() throws WrongScreenshotException {
@@ -90,7 +98,7 @@ public class HexAgent implements Runnable {
 				// on a slingshot again
 				final ABType type = getBirdType(new Vision(tacticManager.getScreenshot()), tacticManager.getSling());
 				if (type == null)
-					throw new WrongScreenshotException();
+					throw new WrongScreenshotException("could not detect bird type");
 
 				if (birdsQueue == null)
 					birdsQueue = new LinkedList<>();
@@ -103,12 +111,15 @@ public class HexAgent implements Runnable {
 
 	}
 
-	private void extractInfo() {
+	private void extractInfo() throws WrongScreenshotException, TerminateAgentException {
 		boolean hopelessLevel = true;
 		tacticManager.setSling(null);
 		while (tacticManager.getSling() == null && hopelessLevel) {
 			HexAgent.Log.info("Making screenshot..");
-			tacticManager.setScreenshot(ar.doScreenShot());
+			BufferedImage im = ar.doScreenShot();
+			if( im == null )
+				throw new WrongScreenshotException("could not get screenshot to extract info");
+			tacticManager.setScreenshot(im);
 			HexAgent.Log.info("Building birds queue..");
 			tacticManager.setBirdsQueue(getBirdsQueue(tacticManager.getScreenshot()));
 			if (tacticManager.getSling() == null) {
@@ -132,11 +143,18 @@ public class HexAgent implements Runnable {
 		// If the level was processed completely, i.e. either success or fail,
 		// then update the scores according to the strategy
 		if (state == GameState.WON || state == GameState.LOST) {
-			HexAgent.Log.info("ZGS: state is either won or lost");
+			HexAgent.Log.info("state is either won or lost: "+state.toString());
 			if (BenchmarkStrategy.BENCHMARK)
 				if (state == GameState.WON) {
 					final int score = HexAgent.gse.getScoreEndGame(ar.doScreenShot());
+					HexAgent.Log.info("updating in benchmark: score= " + score);
 					strategyManager.updateScore(score);
+					HexAgent.Log.info("saving scores");
+					try {
+					strategyManager.saveScores("scores.csv");
+					} catch (final IOException e) {
+						HexAgent.Log.warning("cannot save scores: " + e.getMessage());
+					}
 					HexAgent.Log.fine("WON|score: " + score);
 				} else {
 					strategyManager.updateScore(0);
@@ -330,10 +348,10 @@ public class HexAgent implements Runnable {
 		double bestDist = 0;
 		final List<ABObject> birds = vision.findBirdsMBR();
 		// Log.info(b.name() + ":" + birds.size() + " ");
-		HexAgent.Log.info("ZGS: list of birds - " + birds);
+		HexAgent.Log.info("list of birds - " + birds);
 
 		if (birds.isEmpty()) {
-			HexAgent.Log.info("ZGS: list of birds is empty");
+			HexAgent.Log.info("list of birds is empty");
 			return null;
 		}
 		for (final ABObject bird : birds) {
@@ -366,7 +384,7 @@ public class HexAgent implements Runnable {
 	}
 
 	// run the thread
-	public void playStrategy() {
+	public int playStrategy() throws TerminateAgentException {
 
 		int failure = 0;
 
@@ -376,15 +394,17 @@ public class HexAgent implements Runnable {
 		DebugUtils.saveBenchmark();
 
 		GameState state = null;
-		while (failure < HexAgent.MAX_FAILURES_ALLOWED)
+		while (failure < HexAgent.MAX_FAILURES_ALLOWED) {
 			try {
 
 				// TODO Make a new trajectory planner whenever a new level is
 				// entered
-				HexAgent.Log.info("Loading level number " + strategyManager.getCurrentLevel());
+				HexAgent.Log.info("Current Level before loading: " + strategyManager.getCurrentLevel());
 
 				//if (state == GameState.WON || state == GameState.LOST)
 				strategyManager.loadNewLevel(state);
+
+				HexAgent.Log.info("Loaded Level: " + strategyManager.getCurrentLevel());
 
 				tacticManager.reset();
 
@@ -398,13 +418,17 @@ public class HexAgent implements Runnable {
 				failure = 0;
 				state = ar.checkState();
 
+			} catch (final TerminateAgentException eexit) {
+				throw eexit;
 			} catch (final Exception e) {
 				failure++;
 				final StringWriter sw = new StringWriter();
 				e.printStackTrace(new PrintWriter(sw));
 				HexAgent.Log.severe("agent run Thread terminated by exception " + sw.toString());
 			}
-
+		}
+		HexAgent.Log.severe("failed too often, leaving");
+		return 0;
 	}
 
 	private void playTactic() {
@@ -448,7 +472,9 @@ public class HexAgent implements Runnable {
 				// If the recognition failed again, use the default bird
 				if (tacticManager.getCurrentBird() == null)
 					tacticManager.setCurrentBird(Tactic.DEFAULT_BIRD_ON_SLINGSHOT);
-				HexAgent.Log.severe("screenshot error");
+				final StringWriter sw = new StringWriter();
+				e.printStackTrace(new PrintWriter(sw));
+				HexAgent.Log.severe("screenshot error: " + sw.toString());
 			}
 	}
 
@@ -466,9 +492,11 @@ public class HexAgent implements Runnable {
 			try {
 				initAgent();
 				playStrategy();
+			} catch (final TerminateAgentException eexit) {
+				HexAgent.Log.severe("exit the agent: "+eexit.toString());
+				System.exit(0);
 			} catch (final Exception e) {
 				HexAgent.Log.severe("AGENT CRASHED...RESTARTING");
 			}
 	}
-
 }

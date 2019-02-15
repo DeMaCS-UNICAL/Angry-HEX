@@ -15,8 +15,12 @@ package angryhexclient.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+
+import java.util.logging.Logger;
 
 public class Utils {
 
@@ -45,4 +49,29 @@ public class Utils {
 	public static void deleteDir(final String file) throws IOException, InterruptedException {
 		Runtime.getRuntime().exec(String.format("rm -rf %s", file)).waitFor();
 	}
+
+  public static String exceptionWithTrace(Throwable e) {
+    StringWriter stacktrace = new StringWriter();
+    e.printStackTrace(new PrintWriter(stacktrace));
+    return e.getMessage() + " " + stacktrace.toString();
+  }
+
+  public static class ExceptionHandler implements java.lang.Thread.UncaughtExceptionHandler {
+
+    private Logger log;
+
+    public ExceptionHandler(Logger setlog) {
+        log = setlog;
+    }
+
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        log.severe("Uncaught Exception "+Utils.exceptionWithTrace(e));
+    }
+  }
+
+  public static void registerUncaughtExceptionHandler(Logger log) {
+    Thread.setDefaultUncaughtExceptionHandler(new Utils.ExceptionHandler(log));
+  }
+
 }

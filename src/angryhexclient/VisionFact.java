@@ -65,7 +65,7 @@ public class VisionFact {
 	public void createFacts(ABType currentBird) {
 		addBirdTypeToExecutor(currentBird);
 		addTrajectoryInfoToExecutor(vision.findSlingshotRealShape());
-		addPigs(vision.findPigsMBR());
+		addPigs(vision.findPigsRealShape().isEmpty() ? vision.findPigsMBR() : vision.findPigsRealShape());
 		addBlocks(vision.findBlocksRealShape());
 		addTNTs(vision.findTNTs());
 		// addGround(ourVision.detectGround());

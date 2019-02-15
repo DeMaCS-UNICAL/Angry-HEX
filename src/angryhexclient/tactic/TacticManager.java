@@ -91,7 +91,10 @@ public class TacticManager {
 	}
 
 	public void initForNextTurn() {
-		resetCurrentTurn();
+		if(firstShoot==true)
+			resetCurrentTurn();
+		else	
+			increaseCurrentTurn();
 	}
 
 	/**

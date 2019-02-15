@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import ab.demo.other.ClientActionRobotJava;
 import angryhexclient.util.LogFormatter;
 import angryhexclient.util.OutConsoleHandler;
+import angryhexclient.util.Utils;
 
 public class HexMainEntry {
 
@@ -42,6 +43,7 @@ public class HexMainEntry {
 
 		HexMainEntry.Log.info("starting HexMainEntry main");
 		try {
+			Utils.registerUncaughtExceptionHandler(HexMainEntry.Log);
 
 			// Rips off any dlvhex2 processes which were left
 			HexMainEntry.Log.info("killing leftover processes");
@@ -75,11 +77,10 @@ public class HexMainEntry {
 				new Thread(ha).start();
 
 			} catch (final Exception e) {
-				HexMainEntry.Log.severe("Cannot init agent: " + e.getMessage());
+				HexMainEntry.Log.severe("Cannot init agent: " + Utils.exceptionWithTrace(e));
 			}
-
 		} catch (final Exception e) {
-			HexMainEntry.Log.severe("General Error: " + e.getMessage());
+			HexMainEntry.Log.severe("General Error: " + Utils.exceptionWithTrace(e));
 		}
 	}
 }

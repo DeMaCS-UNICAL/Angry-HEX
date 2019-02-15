@@ -21,10 +21,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.Runnable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Collection;
 import java.util.Queue;
 import java.util.logging.Logger;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
@@ -36,6 +43,8 @@ import ab.vision.VisionUtils;
 import angryhexclient.Configuration;
 import angryhexclient.strategy.StrategyManager;
 import angryhexclient.tactic.TacticManager;
+import angryhexclient.TargetReasoner;
+import angryhexclient.util.HTMLUtil;
 
 public class DebugUtils {
 	// class for storing pairs of nanotime/info
@@ -67,6 +76,7 @@ public class DebugUtils {
 	private static byte currentLevel;
 	private static int currentTurn;
 	private static List<TimePair> timeList = new LinkedList<>();
+	private static List<String> atom = new ArrayList<>();
 	private static String currentBird;
 	private static int n_redBirds;
 	private static int n_yellowBirds;
@@ -89,42 +99,42 @@ public class DebugUtils {
 				Utils.createDir(DebugUtils.DEBUG_DIR);
 				Utils.createDir(DebugUtils.SCREENSHOT_DIR);
 				Utils.createDir(DebugUtils.HEX_DIR);
+				DebugUtils.writeBenchmarkFileHeader();
 			} catch (final IOException e) {
-				DebugUtils.Log.warning("cannot create " + DebugUtils.DEBUG_DIR);
+				DebugUtils.Log.warning("cannot create " + DebugUtils.DEBUG_DIR+": "+e.toString());
+				// abort so that we notice (this code runs only in debug mode)
+				System.exit(1);
 			} catch (final InterruptedException e) {
-				DebugUtils.Log.warning("cannot create " + DebugUtils.DEBUG_DIR);
+				DebugUtils.Log.warning("cannot create " + DebugUtils.DEBUG_DIR+": "+e.toString());
+				// abort so that we notice (this code runs only in debug mode)
+				System.exit(1);
 			}
 		} else
 			DEBUG = false;
 
-		PrintWriter log = null;
-		try {
-			log = new PrintWriter(new FileWriter(DebugUtils.BENCHMARK_FILE, true));
-			log.print("Level;");
-			log.print("Turn;");
-			log.print("Current Bird;");
-			log.print("Number of Red Birds;");
-			log.print("Number of Yellow Birds;");
-			log.print("Number of Blue Birds;");
-			log.print("Number of Black Birds;");
-			log.print("Number of White Birds;");
-			log.print("Number of Birds;");
-			log.print("Number of Pigs;");
-			log.print("Number of Ice Blocks;");
-			log.print("Number of Stone Blocks;");
-			log.print("Number of Wood Blocks;");
-			log.print("Number of Hills (ex Ground) objects;");
-			log.print("Number of TNT objects;");
-			log.print("Number of Unknown objects;");
-			log.print("Estimated Total Time (nanoseconds);");
-			log.println();
-		} catch (final IOException e) {
-			DebugUtils.Log.warning("cannot write " + DebugUtils.BENCHMARK_FILE);
-		} finally {
-			if (log != null)
-				log.close();
-		}
+	}
 
+	public static void writeBenchmarkFileHeader() throws IOException {
+		PrintWriter log = new PrintWriter(new FileWriter(DebugUtils.BENCHMARK_FILE, true));
+		log.print("Level;");
+		log.print("Turn;");
+		log.print("Current Bird;");
+		log.print("Number of Red Birds;");
+		log.print("Number of Yellow Birds;");
+		log.print("Number of Blue Birds;");
+		log.print("Number of Black Birds;");
+		log.print("Number of White Birds;");
+		log.print("Number of Birds;");
+		log.print("Number of Pigs;");
+		log.print("Number of Ice Blocks;");
+		log.print("Number of Stone Blocks;");
+		log.print("Number of Wood Blocks;");
+		log.print("Number of Hills (ex Ground) objects;");
+		log.print("Number of TNT objects;");
+		log.print("Number of Unknown objects;");
+		log.print("Estimated Total Time (nanoseconds);");
+		log.println();
+		log.close();
 	}
 
 	public static void addBirds(final Queue<ABObject> queue) {
@@ -241,7 +251,7 @@ public class DebugUtils {
 	}
 
 	public static void init(final StrategyManager smanager, final TacticManager tmanager) {
-		System.out.println("Init");
+		Log.info("Init");
 		DebugUtils.strategyManager = smanager;
 		DebugUtils.tacticManager = tmanager;
 	}
@@ -434,6 +444,189 @@ public class DebugUtils {
 		if (DebugUtils.imgFrame == null)
 			DebugUtils.imgFrame = new ImageSegFrame("Rotated rectangles.", img);
 		DebugUtils.imgFrame.refresh(img);
+	}
+
+/**
+	 * Creates the Debug HTML file containing all valuable information about the reasoning process in a level
+	 */
+	public static void createDebugMarks(final List<List<TargetReasoner.MarkedData>> marked, final BufferedImage image, final List<ABObject> objects, int round, TargetReasoner.TargetData target){
+		if (!DebugUtils.DEBUG)
+			return;
+
+		String dir = String.format("Level_%d",(int)currentLevel);
+		File file = new File(DebugUtils.SCREENSHOT_DIR + dir);
+		if(!file.exists()){
+			if(file.mkdir())
+				DebugUtils.Log.fine("created new directory for debug information!");
+			else
+				DebugUtils.Log.warning("could not create directory for debug information!");
+		}
+
+		HTMLUtil util = new HTMLUtil(dir, round);
+		final BufferedImage imgRS = DebugUtils.drawRealShapes(image);
+		DebugUtils.saveScreenshot(imgRS, String.format("%s/RealShapes_%d", dir, round));
+		util.addPicture(String.format("%s/RealShapes_%d.png", dir, round));
+		int answercount = 0;
+		util.addText("List of Marks:</br>- shootable</br>- target</br>- prediction");
+		for(List<TargetReasoner.MarkedData> marker: marked){
+			if(marker.isEmpty())
+				continue;
+			String filename = String.format("%s/Round_%d_Answerset_%d", dir, round,answercount);
+			DebugUtils.drawWithTime(marker, image, objects, filename);
+			util.addPicture(filename + ".png");
+			answercount++;
+		}
+		util.addText("Chosen target: " + target.toString());
+		if(!atom.isEmpty()) util.addText("Atom for close-up inspection:</br>" + atom.toString());
+		else util.addText("No chosen Atoms!");
+		util.renderPage(DebugUtils.SCREENSHOT_DIR + dir);
+	}
+
+	/**
+	 * Draws the whole answerset with verticle atoms and horizontal timesteps
+	 */
+	private static void drawWithTime(final List<TargetReasoner.MarkedData> marked, final BufferedImage image, final List<ABObject> objects, String filename){
+		if(!DebugUtils.DEBUG)return;
+		int max = 0;
+		for(TargetReasoner.MarkedData m: marked){
+			if(m.time > max) max = m.time;
+		}
+		LinkedList<TargetReasoner.MarkedData>[] list = new LinkedList[max+1];
+		BufferedImage[] imgs = new BufferedImage[max+1];
+		int width = 0;		
+		for(int i = 0; i<=max; i++){
+			list[i] = new LinkedList<TargetReasoner.MarkedData>();
+			for(TargetReasoner.MarkedData m: marked){
+				if(m.time == i) list[i].add(m);
+			}
+			imgs[i] = drawDebugMarks(list[i], image, objects);
+			width += imgs[i].getWidth();
+		}
+		final BufferedImage concat = new BufferedImage(width, imgs[0].getHeight(), BufferedImage.TYPE_INT_RGB);
+		final Graphics2D g = concat.createGraphics();
+		width = 0;
+		for(BufferedImage im: imgs){
+			g.drawImage(im, width, 0, null);
+			width += im.getWidth();
+		}
+		DebugUtils.saveScreenshot(concat, filename);
+	}
+
+	/**
+	 * Creates the verticle Picture for each Timestep and answerset
+	 */
+	private static BufferedImage drawDebugMarks(final List<TargetReasoner.MarkedData> marked, final BufferedImage image, final List<ABObject> objects){
+		if (!DebugUtils.DEBUG)
+			return null;
+
+		String identifier = Configuration.getDebugMarks();
+		boolean all = identifier.equals("all");
+		ArrayList<ArrayList<ABObject>> temp = new ArrayList<ArrayList<ABObject>>();
+		ArrayList<String> identifiers = new ArrayList<String>();
+
+		if(all) {
+			for(TargetReasoner.MarkedData mark: marked)
+				identifiers.add(mark.identifier);
+			LinkedHashSet<String> temporary = new LinkedHashSet<String>((Collection)identifiers);
+			identifiers.clear();
+			identifiers.addAll(temporary);
+		} else
+			for(String s: identifier.split(","))
+				identifiers.add(s);
+
+		Color[] cols = new Color[identifiers.size()];
+		int colcount = 0;
+		for(String iden: identifiers){
+			ArrayList<ABObject> temptemp = new ArrayList<ABObject>();
+			Color col = null;
+			for(ABObject ob: objects){
+				for(TargetReasoner.MarkedData data: marked){
+					if(data.id == ob.id && data.identifier.equals(iden)){
+						temptemp.add(ob);
+						col = data.color;
+						break;
+					}
+				}
+			}
+			temp.add(temptemp);
+			cols[colcount] = col;
+			colcount++;
+		}
+		int maxheight = image.getHeight()* (temp.size());
+		final BufferedImage img = new BufferedImage(image.getWidth(), maxheight, BufferedImage.TYPE_INT_RGB);
+		final Graphics2D g = img.createGraphics();
+		int height = 0;
+		colcount = 0;
+		for(ArrayList<ABObject> list : temp){
+			final BufferedImage imgMarked = VisionUtils.convert2grey(image);
+			VisionUtils.drawBoundingBoxesWithID(imgMarked, list, cols[colcount]);
+			g.drawImage(imgMarked, 0, height, null);
+			height += imgMarked.getHeight();
+			colcount++;
+		}
+		return img;
+	}
+
+	/**
+	 * Adds the list of atoms that are to be inspected
+	 */
+	public static void addInspectedAtom(List<String> atoms){
+		atom = atoms;
+	}
+
+	/**
+	 * Class for the efficient saving of pictures via multithreading
+	 */
+	private static class PictureSaver {
+		private final Runnable save = new Runnable() {
+			@Override
+			public void run() {
+        			savePic();
+			}
+		};
+
+		private static final ExecutorService executor = Executors.newFixedThreadPool(1);
+		private final BufferedImage img;
+		private final String fileName;
+
+		public PictureSaver(BufferedImage img, String name) {
+			this.img = img;
+			this.fileName = name;
+			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable(){
+				@Override
+				public void run(){
+					Log.info("\n### SHUTDOWN CLEANUP ###\n");
+					executor.shutdown();
+					while(true){
+						try{
+							Log.info("waiting for shutdown...");
+							if(executor.awaitTermination(5,TimeUnit.SECONDS))
+								break;
+						} catch(InterruptedException I) {}
+					}
+				}
+			}));
+		}
+
+		public void save() {
+			executor.submit(save);
+		}
+
+		public static void close() {
+			executor.shutdown();
+		}
+	
+		private void savePic() {
+			final String file = DebugUtils.SCREENSHOT_DIR + fileName + ".png";
+			try {
+				final File dest = new File(file);
+				ImageIO.write(img, "png", dest);
+				DebugUtils.Log.fine("saved " + dest.getName());
+			} catch (final IOException e) {
+				DebugUtils.Log.warning("cannot save " + file);
+			}
+		}
+
 	}
 
 }

@@ -16,6 +16,8 @@ import java.util.Random;
 
 import ab.demo.other.ClientActionRobotJava;
 
+import angryhexclient.TerminateAgentException;
+
 /**
  * @author Stefano
  *
@@ -33,7 +35,7 @@ public class JavaStrategy extends StrategyManager {
 	 * @return next level to play
 	 */
 	@Override
-	protected byte findNextLevelToPlay() {
+	protected byte findNextLevelToPlay() /* throws TerminateAgentException */ {
 
 		/**
 		 * First it tries to play each level one time

@@ -18,6 +18,8 @@ import java.util.logging.Logger;
 
 import ab.demo.other.ClientActionRobotJava;
 
+import angryhexclient.TerminateAgentException;
+
 /**
  * @author Stefano, Dasha
  *
@@ -37,9 +39,9 @@ public class DeclarativeStrategy extends StrategyManager {
 	 * @return next level to play
 	 */
 	@Override
-	protected byte findNextLevelToPlay() {
+	protected byte findNextLevelToPlay() /* throws TerminateAgentException */ {
 
-		System.out.println("SM: searching for the next level to play");
+		Log.info("SM: searching for the next level to play");
 
 		byte newLevel = (byte) 1;
 
@@ -85,7 +87,7 @@ public class DeclarativeStrategy extends StrategyManager {
 				// newLevel = (byte) (1 + (new Random()).nextInt(21));
 				newLevel = (byte) (1 + new Random().nextInt(numberOfLevels));
 
-			System.out.println("SM: next level to be played " + newLevel);
+			Log.info("SM: next level to be played " + newLevel);
 
 			return newLevel;
 

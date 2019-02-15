@@ -26,12 +26,18 @@ import angryhexclient.Memory;
 import angryhexclient.TargetReasoner;
 import angryhexclient.VisionFact;
 import angryhexclient.util.DebugUtils;
+import angryhexclient.util.Utils;
 
 public class DeclarativeTactic extends Tactic {
 
 	public DeclarativeTactic(final ClientActionRobotJava ar, final TacticManager manager) {
 		super(ar, manager);
 	}
+
+	private int counter = 0;
+	private int lastLevel = 0;
+
+	private boolean playingLevelTheFirstTime = true;
 
 	/**
 	 * The method that does all the reasoning. It takes the vision component and
@@ -53,9 +59,13 @@ public class DeclarativeTactic extends Tactic {
 		final VisionFact visionFacts = new VisionFact(vision, TargetReasoner.getInstance(), manager.getTp());
 		visionFacts.createFacts(currentBird);
 
-		final BufferedImage img = DebugUtils.drawObjectsWithID(manager.getScreenshot(), visionFacts.getABObjects());
-		DebugUtils.showImage(img);
-		DebugUtils.saveScreenshot(img, String.format("level_%d_%d", (int) currentLevel, manager.getCurrentTurn()));
+		try {
+			final BufferedImage img = DebugUtils.drawObjectsWithID(manager.getScreenshot(), visionFacts.getABObjects());
+			DebugUtils.showImage(img);
+			DebugUtils.saveScreenshot(img, String.format("level_%d_%d", (int) currentLevel, manager.getCurrentTurn()));
+		} catch(final Throwable t) {
+			Tactic.Log.warning("Debugging failed "+Utils.exceptionWithTrace(t));
+		}
 
 		// If it's the first shoot it load the targets selected before
 		if (manager.isFirstShoot()) {
@@ -98,7 +108,20 @@ public class DeclarativeTactic extends Tactic {
 					80 + new Random().nextInt(31));
 		}
 
+		if (answers.size() > 1) {
+			Tactic.Log.warning("Randomly choosing one answer set out of "+answers.size());
+		}
+
 		final TargetReasoner.TargetData answer = answers.get(new Random().nextInt(answers.size()));
+
+		if(currentLevel != lastLevel){
+			lastLevel = currentLevel;
+			counter = 0;
+		}
+
+		List<List<TargetReasoner.MarkedData>> marked = TargetReasoner.getInstance().getMarkedData();
+		DebugUtils.createDebugMarks(marked, manager.getScreenshot(), visionFacts.getABObjects(),counter,answer);
+		counter++;
 
 		final ABObject answerObject = visionFacts.getABObject(answer.id);
 		Tactic.Log.info("///////////");

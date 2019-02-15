@@ -120,7 +120,7 @@ public abstract class Tactic {
 			// and x+1
 			lastX = ps.get(i);
 		}
-		System.out.println("TargetX: " + targetX + " TapX:" + lastX);
+		Log.info("TargetX: " + targetX + " TapX:" + lastX);
 		return lastX;
 	}
 
@@ -179,6 +179,7 @@ public abstract class Tactic {
 		final int threshold = Configuration.getFastshootThreshold();
 		BufferedImage prevImage_cropped = null;
 		BufferedImage thisImage = ar.doScreenShot();
+		Tactic.Log.info("getStableImage: initial screenshot "+Integer.toString(thisImage.getWidth()) + "x" +Integer.toString(thisImage.getHeight()));
 		final int xCoordinate = manager.getSling().x + 80;
 		final int width = thisImage.getWidth() - xCoordinate;
 		final int height = thisImage.getHeight();
@@ -203,7 +204,7 @@ public abstract class Tactic {
 
 			// Log.info("quickShoot: after "+waitSeconds+" seconds: pixel
 			// difference "+pixelDifference+" (limit "+threshold+")");
-			Tactic.Log.info("getStableImage: after " + waitSeconds + " seconds: pixel difference " + pixelDifference_cropped
+			Tactic.Log.info("getStableImage: after " + waitSeconds + " seconds (" + Integer.toString(thisImage.getWidth()) + "x" +Integer.toString(thisImage.getHeight()) + "): pixel difference " + pixelDifference_cropped
 					+ " (limit " + threshold + ")");
 		}
 		Tactic.Log.info("finished getStableImage after waiting " + waitSeconds + " seconds");
@@ -215,7 +216,6 @@ public abstract class Tactic {
 	 * The method that does all the reasoning. It takes the vision component and
 	 * returns the best shot according to our HEX program.
 	 *
-	 * @param tp
 	 *
 	 * @return A result instance, containing the target and the trajectory to be
 	 *         used.
@@ -329,11 +329,6 @@ public abstract class Tactic {
 	/**
 	 * Solve a particular level by shooting birds directly to pigs
 	 *
-	 * @param ar
-	 * @param screenshot
-	 * @param birdsQueue
-	 * @param sling
-	 * @param tp
 	 * @param currentLevel
 	 *
 	 * @return GameState: the game state after shots.
@@ -351,9 +346,9 @@ public abstract class Tactic {
 			final Vision vision = new Vision(manager.getScreenshot());
 			final ABType currentBird = manager.getCurrentBird();
 			if (currentBird == null)
-				throw new WrongScreenshotException();
+				throw new WrongScreenshotException("no currentBird");
 
-			if (!vision.findPigsMBR().isEmpty()) {
+			if (!(vision.findPigsMBR().isEmpty() && vision.findPigsRealShape().isEmpty())) {
 
 				addDebugDataOfTheLevel(vision, currentBird);
 
@@ -387,13 +382,13 @@ public abstract class Tactic {
 
 			} else{
 				Tactic.Log.info("Sling was recognized but no pig is recognized, skipping the level");
-				throw new WrongScreenshotException();
+				throw new WrongScreenshotException("sling but no pig");
 			}
 			
 			
 		} else{
 			Tactic.Log.info("Sling was not recognized, skipping the level");
-			throw new WrongScreenshotException();
+			throw new WrongScreenshotException("no sling");
 		}
 
 		return ar.checkState();

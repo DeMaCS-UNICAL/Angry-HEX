@@ -598,7 +598,7 @@ public:
 			groundBox.SetAsBox(1000.0f, 0.0f);
 			groundBody->CreateFixture(&groundBox, 1.0f);
 
-      std::cerr << "created auto ground" << std::endl;
+      if (debug) std::cerr << "created auto ground" << std::endl;
 		}
 
     for(const auto& hill : aspworld.hills) {

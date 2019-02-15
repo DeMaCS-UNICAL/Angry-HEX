@@ -12,31 +12,55 @@
  *******************************************************************************/
 package angryhexclient.strategy;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.logging.Logger;
+import angryhexclient.Configuration;
+import angryhexclient.util.Utils;
+import angryhexclient.TerminateAgentException;
 
 import ab.demo.other.ClientActionRobotJava;
 
 public class BenchmarkStrategy extends StrategyManager {
 
-	final public static boolean BENCHMARK = false;
+	final public static boolean BENCHMARK;
 
 	private static Logger Log = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-	private static String BENCHMARK_FILE = "benchmark.csv";
+
+	private static String BENCHMARK_DIR = System.getProperty("user.dir") + File.separator + "benchmarks";
+	private static String BENCHMARK_FILE = BenchmarkStrategy.BENCHMARK_DIR + File.separator + "benchmark_onetime.csv";
 
 	// levels to benchmark
 	private int[] levels = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
 			13, 14, 15, 16, 17, 18, 19, 20, 21 };
 	// number of runs per level
-	private int runs = 5;
+	private int runs = 1;
 	// index of current level in array 'levels'
 	private int currIdx = 0;
 	// count of runs of levels[currIdx]
 	private int currRun = 0;
+	private boolean playOneTime = false;
+	private boolean playUntilWon = false;
 
 	int[][] scores = new int[levels.length][runs];
+
+	static {
+		if (Configuration.isBenchmarkMode()>0) {
+			Log.info("setting benchmark to True");
+			BENCHMARK = true;
+			try {
+				Utils.deleteDir(BenchmarkStrategy.BENCHMARK_DIR);
+				Utils.createDir(BenchmarkStrategy.BENCHMARK_DIR);
+			} catch (final IOException e) {
+				BenchmarkStrategy.Log.warning("cannot create " + BenchmarkStrategy.BENCHMARK_DIR);
+			} catch (final InterruptedException e) {
+				BenchmarkStrategy.Log.warning("cannot create " + BenchmarkStrategy.BENCHMARK_DIR);
+			}
+		} else
+			BENCHMARK = false;
+	}
 
 	public BenchmarkStrategy(ClientActionRobotJava ar, byte startingLevel,
 			byte[] configureData) throws Exception {
@@ -49,23 +73,31 @@ public class BenchmarkStrategy extends StrategyManager {
 	}
 
 	@Override
-	protected byte findNextLevelToPlay() {
-		if (currRun < runs) {
+	protected byte findNextLevelToPlay() throws TerminateAgentException {
+		Log.info("finding next level to play");
+		if (currRun < runs-1) {
 			currRun++;
+			Log.info("chose to play="+ levels[currIdx]);
 			return (byte) levels[currIdx];
 		} else if (currIdx < levels.length - 1) {
-			currRun = 1;
+			Log.info("moving on to next level, saving the result");
+			saveResult();
+			currRun = 0;
 			currIdx++;
+			Log.info("chose to play="+ levels[currIdx]);
 			return (byte) levels[currIdx];
 		}
+		Log.info("returned nothing");
 		saveResult();
 		Log.warning("All levels in benchmark strategy covered.");
-		return (byte) -1;
+		throw new TerminateAgentException();
 	}
 
 	@Override
 	public void updateScore(int score) {
+		Log.info("currIdx= " + currIdx + ", currRun="+ currRun);
 		scores[currIdx][currRun] = score;
+		Log.info("Score= " + score);
 	}
 
 	private int[][] evaluate() {
@@ -84,7 +116,10 @@ public class BenchmarkStrategy extends StrategyManager {
 				sum += scores[i][j];
 			}
 			res[i][0] = won;
-			res[i][1] = sum / won;
+			if (won!=0)
+				res[i][1] = sum / won;
+			else
+				res[i][1] = 0;
 			res[i][2] = sum / runs;
 			res[i][3] = best;
 		}
@@ -103,12 +138,9 @@ public class BenchmarkStrategy extends StrategyManager {
 	private void saveResult() {
 		int[][] res = evaluate();
 		try {
-			PrintWriter wr = new PrintWriter(new FileWriter(BENCHMARK_FILE,
-					false));
-			wr.println(String
-					.format("Level;Number of WON runs;AVG excl. LOST;AVG incl. LOST;Best score"));
+			PrintWriter wr = new PrintWriter(new FileWriter(BENCHMARK_FILE,false));
+			wr.println(String.format("Level;Number of WON runs;AVG excl. LOST;AVG incl. LOST;Best score"));
 			for (int i = 0; i < res.length; i++) {
-
 				wr.println(String.format("%d;%d;%d;%d;%d", levels[i],
 						res[i][0], res[i][1], res[i][2], res[i][3]));
 			}

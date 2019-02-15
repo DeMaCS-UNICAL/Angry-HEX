@@ -12,11 +12,11 @@
  *******************************************************************************/
 package angryhexclient;
 
-public class WrongScreenshotException extends Exception {
+public class TerminateAgentException extends Exception {
 
 	private static final long serialVersionUID = 1L;
 
-  public WrongScreenshotException() { super(); }
+  public TerminateAgentException() { super(); }
 
-  public WrongScreenshotException(String message) { super(message); }
+  public TerminateAgentException(String message) { super(message); }
 }
